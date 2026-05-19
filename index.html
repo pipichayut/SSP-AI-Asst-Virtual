@@ -28,6 +28,8 @@
     --amber: #FBBF24;
     --amber-dim: rgba(251, 191, 36, 0.15);
     --cyan: #38BDF8;
+    --cyan-dim: rgba(56, 189, 248, 0.15);
+    --cyan-2: rgba(56, 189, 248, 0.35);
     --display: 'Anton', sans-serif;
     --sans: 'Geist', system-ui, sans-serif;
     --mono: 'Geist Mono', ui-monospace, monospace;
@@ -110,11 +112,12 @@
 
   /* ========== TOOL GRID ========== */
   .tool-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  .tool-row { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; display: grid; grid-template-columns: 1fr 1fr 110px 70px; gap: 14px; align-items: center; transition: border-color 0.2s; }
+  .tool-row { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; display: grid; grid-template-columns: 1fr 1fr 110px 80px; gap: 14px; align-items: center; transition: border-color 0.2s; }
   .tool-row:hover { border-color: var(--border-2); }
   .tool-row.crit { border-left: 2px solid var(--red); }
   .tool-row.warn { border-left: 2px solid var(--amber); }
   .tool-row.ok { border-left: 2px solid var(--mint); }
+  .tool-row.recovered { border-left: 2px solid var(--cyan); }
   .tool-row.idle { border-left: 2px solid var(--text-3); }
   .tool-info .tool-name { font-family: var(--mono); font-size: 12px; color: var(--text-1); font-weight: 500; }
   .tool-info .tool-vol { font-family: var(--mono); font-size: 10px; color: var(--text-3); margin-top: 3px; }
@@ -131,6 +134,7 @@
   .pill-crit { background: var(--red-dim); color: var(--red); }
   .pill-warn { background: var(--amber-dim); color: var(--amber); }
   .pill-ok { background: var(--mint-dim); color: var(--mint); }
+  .pill-recovered { background: var(--cyan-dim); color: var(--cyan); }
   .pill-idle { background: rgba(255,255,255,0.06); color: var(--text-3); }
 
   /* ========== CHART HOLDERS ========== */
@@ -138,16 +142,27 @@
 
   /* ========== INCIDENTS ROW ========== */
   .row-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 12px; }
-  .incident-card { background: var(--surface); border: 1px solid var(--red-2); border-radius: 8px; padding: 20px 24px; position: relative; overflow: hidden; }
-  .incident-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--red); }
-  .incident-tag { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; color: var(--red); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
+  .incident-card { background: var(--surface); border-radius: 8px; padding: 20px 24px; position: relative; overflow: hidden; transition: border-color 0.2s; }
+  .incident-card.active { border: 1px solid var(--red-2); }
+  .incident-card.active::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--red); }
+  .incident-card.resolved { border: 1px solid var(--cyan-2); }
+  .incident-card.resolved::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--cyan); }
+  .incident-card.none { border: 1px solid var(--border); }
+  .incident-tag { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
   .incident-tag::before { content: '●'; font-size: 12px; }
+  .incident-tag.active { color: var(--red); }
+  .incident-tag.resolved { color: var(--cyan); }
+  .incident-tag.none { color: var(--text-3); }
   .incident-title { font-family: var(--display); font-size: 26px; letter-spacing: 0.02em; line-height: 1.05; text-transform: uppercase; }
-  .incident-title em { color: var(--red); font-style: normal; }
-  .incident-stats { display: flex; gap: 24px; margin: 16px 0 6px; padding: 14px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .incident-title.active em { color: var(--red); font-style: normal; }
+  .incident-title.resolved em { color: var(--cyan); font-style: normal; }
+  .incident-title.none em { color: var(--text-2); font-style: normal; }
+  .incident-stats { display: flex; gap: 24px; margin: 16px 0 6px; padding: 14px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
   .incident-stat .lbl { font-family: var(--mono); font-size: 9px; color: var(--text-3); letter-spacing: 0.1em; text-transform: uppercase; }
   .incident-stat .val { font-family: var(--display); font-size: 30px; color: var(--text-1); margin-top: 3px; letter-spacing: 0.02em; }
   .incident-stat .val.red { color: var(--red); }
+  .incident-stat .val.mint { color: var(--mint); }
+  .incident-stat .val.cyan { color: var(--cyan); }
 
   /* ========== LANGUAGE GAP ========== */
   .lang-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px; }
@@ -239,7 +254,7 @@
   <section class="sec">
     <div class="sec-head">
       <div class="sec-num">01</div>
-      <h2 class="sec-title">Average latency · 14 days</h2>
+      <h2 class="sec-title" id="latencyTitle">Average latency</h2>
       <div class="sec-desc" id="latencyDesc">—</div>
     </div>
     <div class="card">
@@ -248,7 +263,7 @@
         <div class="card-meta" id="latencyCardMeta">—</div>
       </div>
       <div class="chart-wrap" style="height: 240px;">
-        <canvas id="latencyChart" role="img" aria-label="Average latency per day over 14 days"></canvas>
+        <canvas id="latencyChart" role="img" aria-label="Average latency per day"></canvas>
       </div>
     </div>
   </section>
@@ -263,10 +278,10 @@
     <div class="card">
       <div class="card-head">
         <div class="card-title" id="dailyCardTitle">—</div>
-        <div class="card-meta">14d</div>
+        <div class="card-meta" id="dailyCardMeta">—</div>
       </div>
       <div class="chart-wrap" style="height: 240px;">
-        <canvas id="dailyChart" role="img" aria-label="Daily traces and unresolved rate over 14 days"></canvas>
+        <canvas id="dailyChart" role="img" aria-label="Daily traces and unresolved rate"></canvas>
       </div>
     </div>
   </section>
@@ -290,12 +305,12 @@
     </div>
     <div class="row-2">
 
-      <div class="incident-card">
-        <div class="incident-tag" id="incidentTag">—</div>
-        <h3 class="incident-title" id="incidentTitle">—</h3>
+      <div class="incident-card none" id="incidentCard">
+        <div class="incident-tag none" id="incidentTag">—</div>
+        <h3 class="incident-title none" id="incidentTitle">—</h3>
         <div class="incident-stats" id="incidentStats"></div>
         <div class="chart-wrap" style="height: 180px; margin-top: 6px;">
-          <canvas id="promoChart" role="img" aria-label="Promo failure rate timeline"></canvas>
+          <canvas id="promoChart" role="img" aria-label="Incident failure rate timeline"></canvas>
         </div>
       </div>
 
@@ -354,9 +369,11 @@
     // Your Google Sheet published as CSV (File → Share → Publish to web → CSV)
     DATA_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRGMFK-952N9nSsKiOEJ4JvnuKtdUoe3a7LzqG87yNbmdIcwS_gllZmA0NKsMDei5EGaVSV0qC0moLO/pub?output=csv',
 
-    // Date window to analyze. mode: 'rolling' uses last N days; 'fixed' uses an exact range.
-    WINDOW: { mode: 'rolling', days: 14 },
-    // WINDOW: { mode: 'fixed', start: '2026-04-16', end: '2026-04-29' },
+    // Date window to analyze:
+    //   'all'     — full date range present in the sheet (recommended)
+    //   'rolling' — last N days ending at the latest row (set { mode:'rolling', days:14 })
+    //   'fixed'   — exact range ({ mode:'fixed', start:'2026-04-16', end:'2026-04-29' })
+    WINDOW: { mode: 'all' },
 
     TIMEZONE_LABEL: 'BKK',
 
@@ -365,58 +382,51 @@
       label: 'EXECUTIVE BRIEF'
     },
 
-    // The "Promo tool broke" card. Set tool to a tool that exists in your data,
-    // and break_date to when the regression began. Pre/post stats auto-compute.
+    // The "Promo tool broke" incident card.
+    // State (active / resolved) is auto-detected from the data.
     INCIDENT: {
       enabled: true,
       tool: 'check_promotions',
       break_date: '2026-04-23',
-      title_html: 'Promo tool <em>broke Apr 23</em>'
+      title_template: 'Promo tool <em>broke {{break}}{{recovery}}</em>'
     },
 
-    // Optional override for the red status banner. Set to null to auto-detect from data.
+    // Optional override for the red status banner. Set to null to auto-detect.
     STATUS_BANNER_OVERRIDE: null,
-    // STATUS_BANNER_OVERRIDE: { title: '1 ACTIVE INCIDENT', description: '...', tag: 'P0' },
 
     // Section descriptions (editorial, not computed)
     DESCRIPTIONS: {
       latency: 'Daily avg response time · target ≤ 8s',
       daily: 'Volume × resolution over window',
-      incident: 'Active outage + structural language gap',
+      incident: 'Tool incidents + structural language gap',
       brands: 'Buyer intent the catalog missed · forward to merchandising',
       recommendations: 'Ranked by ROI'
     },
 
-    // Recommendations — edit freely. These are editorial and not derived from data.
+    // Recommendations — edit freely. Editorial, not derived from data.
     RECOMMENDATIONS: [
-      { rank: 1, tier: 'p0', tier_label: 'P0 · Today',       title: 'Fix promo tool data feed',                effort: 'S',   impact: 'High' },
-      { rank: 2, tier: 'p0', tier_label: 'P0 · This sprint', title: 'Order lookup by email + name',            effort: 'M',   impact: 'Very high' },
-      { rank: 3, tier: 'p1', tier_label: 'P1 · 30d',         title: 'Thai language QA pass',                   effort: 'M',   impact: 'High' },
-      { rank: 4, tier: 'p1', tier_label: 'P1 · 60d',         title: 'Restock + branch stock + agent handoff',  effort: 'M-L', impact: 'Med-high' },
-      { rank: 5, tier: 'p2', tier_label: 'P2 · Always-on',   title: 'Tool-fail alerting + lost-demand digest', effort: 'S',   impact: 'Compounding' }
+      { rank: 1, tier: 'p0', tier_label: 'P0 · This sprint', title: 'FAQ content audit · top 50 failing queries', effort: 'M',   impact: 'Very high' },
+      { rank: 2, tier: 'p0', tier_label: 'P0 · This sprint', title: 'Thai order_status fix · close TH/EN gap',   effort: 'M',   impact: 'High' },
+      { rank: 3, tier: 'p1', tier_label: 'P1 · 30d',         title: 'Volume decline diagnosis',                  effort: 'S',   impact: 'Diagnostic' },
+      { rank: 4, tier: 'p1', tier_label: 'P1 · 60d',         title: 'Lost-demand digest to merchandising',       effort: 'S',   impact: 'Med-high' },
+      { rank: 5, tier: 'p2', tier_label: 'P2 · Always-on',   title: 'Tool-fail alerting · catch incidents early',effort: 'S',   impact: 'Compounding' }
     ],
 
     // Brand keywords scanned in failed product searches (Tool Input + Question)
-    BRANDS: ['Nike','New Balance','Adidas','ASICS','Hoka','Crocs','Mizuno','Jordan','Puma','Skechers','Under Armour','On Running','Brooks','Salomon','Reebok','Vans','Converse','Fila'],
+    BRANDS: ['Nike','New Balance','Adidas','ASICS','Hoka','Crocs','Mizuno','Jordan','Puma','Skechers','Under Armour','On Running','Brooks','Salomon','Reebok','Vans','Converse','Fila','Merrell','Speedo','Columbia','Saucony'],
 
-    // Fail-detection rules — applied to each row to classify pass/fail.
-    // Add or remove patterns to tune what counts as a failure.
-    FAIL_OUTPUT_CONTAINS: ['no products found'],
-    FAIL_RESPONSE_PATTERNS: [
-      /no products?\s+found/i,
-      /i don'?t have (specific|the)/i,
-      /unable to (help|find|provide|locate)/i,
-      /ไม่พบสินค้า/,
-      /ไม่ได้ระบุ/,
-      /แนะนำให้ติดต่อ/,
-      /ขออภัย.*ไม่.*(พบ|สามารถ|มี)/
-    ],
+    // Tools considered "product search" for lost-demand brand extraction
+    PRODUCT_SEARCH_TOOLS: ['product_recommendation','product_guide','product_comparison','stock_check'],
 
     // Idle threshold: tools with fewer than this many traces are marked IDLE regardless of fail rate
     IDLE_VOL_THRESHOLD: 30,
 
     // Target avg latency in seconds — drives the dashed line + amber highlights on the latency chart
-    LATENCY_TARGET: 8
+    LATENCY_TARGET: 8,
+
+    // Incident detection — fail-rate thresholds for finding outage windows
+    INCIDENT_OUTAGE_THRESHOLD: 0.4,  // a day counts as "during outage" if fail > 40%
+    INCIDENT_RECOVERY_THRESHOLD: 0.35 // average over recent days; below this = resolved
   };
 
   // ============================================================
@@ -455,7 +465,7 @@
   }
 
   // ============================================================
-  // ANALYSIS — turns raw trace rows into the dashboard data shape
+  // FAILURE DETECTION — per-tool heuristics
   // ============================================================
   const THAI_RE = /[\u0E00-\u0E7F]/;
 
@@ -464,13 +474,47 @@
   }
 
   function isFailed(r) {
-    const out = String(r['Tool Output'] || '').toLowerCase();
-    const resp = String(r['Agent Response'] || '').toLowerCase();
-    for (const term of CONFIG.FAIL_OUTPUT_CONTAINS) {
-      if (out.includes(term.toLowerCase())) return true;
+    const tool = ((r['Tool Used'] || '').trim() || '(direct response)');
+    const out = String(r['Tool Output'] || '');
+    const resp = String(r['Agent Response'] || '');
+
+    if (tool === 'product_recommendation' || tool === 'product_guide' || tool === 'product_comparison') {
+      if (/no products?\s+found/i.test(out)) return true;
+      if (/^\[0\s/.test(out) || /\[0\s+items?\]/i.test(out)) return true;
+      if (/ขออภัย/.test(resp) && /(ไม่พบ|ไม่มี)/.test(resp)) return true;
+      if (/couldn'?t find|no matching/i.test(resp)) return true;
+      return false;
     }
-    if (!resp.trim()) return true;
-    return CONFIG.FAIL_RESPONSE_PATTERNS.some(p => p.test(resp));
+
+    if (tool === 'stock_check') {
+      return /ไม่พบสินค้า/.test(out) || /not\s+(found|in\s+system)/i.test(out) || /\[0\s/.test(out);
+    }
+
+    if (tool === 'check_promotions') {
+      return /ไม่พบโปรโมชัน/.test(out) ||
+             /Found\s+0/i.test(out) ||
+             /\[0\s+promos?\]/i.test(out) ||
+             /\[0\s+items?\]/i.test(out) ||
+             /No\s+promotions?/i.test(out);
+    }
+
+    if (tool === 'order_status') {
+      if (/couldn'?t find an order number/i.test(out)) return true;
+      if (/trouble looking up/i.test(out)) return true;
+      if (/\[0\s+items?\]/i.test(out)) return true;
+      if (/To check your order status, please provide/i.test(out)) return true;
+      return false;
+    }
+
+    if (tool === 'faq_helpdesk' || tool === '(direct response)') {
+      const lc = resp.toLowerCase();
+      const thaiFails = ['ไม่ได้ระบุ','ไม่ทราบ','ไม่แน่ใจ','ขออภัย','ติดต่อเรา','ไม่สามารถ','ไม่พบข้อมูล','ไม่มีข้อมูล','รบกวนแจ้ง','รบกวนคุณ'];
+      const enFails = ["i don't","unable to","unfortunately","i'm sorry","i am sorry","contact us","couldn't find","no information","not specified","cannot find","i do not have","not available"];
+      for (const p of thaiFails) if (resp.includes(p)) return true;
+      for (const p of enFails) if (lc.includes(p)) return true;
+      return false;
+    }
+    return false;
   }
 
   function extractBrand(text) {
@@ -485,7 +529,6 @@
 
   function parseTs(ts) {
     if (!ts) return null;
-    // Google often returns "2026-04-16 0:23:02" — normalize to ISO
     const m = String(ts).match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/);
     if (!m) {
       const d = new Date(ts);
@@ -495,9 +538,7 @@
     return new Date(Date.UTC(+y, +mo - 1, +d, +h, +mi, +(s || 0)));
   }
 
-  function isoDate(d) {
-    return d.toISOString().slice(0, 10);
-  }
+  function isoDate(d) { return d.toISOString().slice(0, 10); }
 
   function annotate(r) {
     const ts = parseTs(r['Timestamp (BKK)'] || r['Timestamp'] || r['timestamp']);
@@ -521,12 +562,15 @@
     if (CONFIG.WINDOW.mode === 'fixed') {
       start = CONFIG.WINDOW.start;
       end = CONFIG.WINDOW.end;
-    } else {
+    } else if (CONFIG.WINDOW.mode === 'rolling') {
       end = dates[dates.length - 1];
       const endD = new Date(end + 'T00:00:00Z');
       const startD = new Date(endD);
-      startD.setUTCDate(startD.getUTCDate() - (CONFIG.WINDOW.days - 1));
+      startD.setUTCDate(startD.getUTCDate() - ((CONFIG.WINDOW.days || 14) - 1));
       start = isoDate(startD);
+    } else { // 'all'
+      start = dates[0];
+      end = dates[dates.length - 1];
     }
     const dateList = [];
     const cur = new Date(start + 'T00:00:00Z');
@@ -541,8 +585,10 @@
   function fmtRange(start, end) {
     const a = new Date(start + 'T00:00:00Z');
     const b = new Date(end + 'T00:00:00Z');
-    const month = b.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }).toUpperCase();
-    return `${a.getUTCDate()} → ${b.getUTCDate()} ${month} ${b.getUTCFullYear()}`;
+    const aM = a.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }).toUpperCase();
+    const bM = b.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }).toUpperCase();
+    if (aM === bM) return `${a.getUTCDate()} → ${b.getUTCDate()} ${bM} ${b.getUTCFullYear()}`;
+    return `${a.getUTCDate()} ${aM} → ${b.getUTCDate()} ${bM} ${b.getUTCFullYear()}`;
   }
 
   function fmtShort(dateStr) {
@@ -550,45 +596,131 @@
     return `${d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' })} ${d.getUTCDate()}`;
   }
 
+  function fmtShortLabel(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00Z');
+    const m = d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+    return `${m} ${d.getUTCDate()}`;
+  }
+
+  // ============================================================
+  // INCIDENT — auto-detect active vs resolved
+  // ============================================================
   function buildIncident(toolMap, win) {
     if (!CONFIG.INCIDENT.enabled || !toolMap[CONFIG.INCIDENT.tool]) {
-      return { section_desc: CONFIG.DESCRIPTIONS.incident, tag: '', title_html: '<em>No incident configured</em>', stats: [], chart_data: win.dateList.map(_ => 0), highlight_index: -1 };
+      return {
+        state: 'none', section_desc: CONFIG.DESCRIPTIONS.incident,
+        tag: 'No incident configured', title_html: '<em>—</em>',
+        stats: [], chart_data: win.dateList.map(_ => 0),
+        outage_start_idx: -1, outage_end_idx: -1
+      };
     }
     const data = toolMap[CONFIG.INCIDENT.tool];
     const breakDate = CONFIG.INCIDENT.break_date;
-    const hi = win.dateList.indexOf(breakDate);
-    const preRows = data.rows.filter(r => r._date < breakDate);
-    const postRows = data.rows.filter(r => r._date >= breakDate);
-    const preFails = preRows.filter(r => r._failed).length;
-    const postFails = postRows.filter(r => r._failed).length;
-    const preFailPct = preRows.length ? Math.round(preFails / preRows.length * 100) : 0;
-    const postFailPct = postRows.length ? Math.round(postFails / postRows.length * 100) : 0;
-    let daysDown = 0;
-    win.dateList.forEach(d => {
-      if (d >= breakDate) {
-        const dd = data.byDate[d];
-        if (dd && dd.count && (dd.fails / dd.count) > 0.8) daysDown++;
+
+    const datesAfter = win.dateList.filter(d => d >= breakDate);
+    const datesBefore = win.dateList.filter(d => d < breakDate);
+
+    // Find the last day where fail > threshold, marching forward from breakDate
+    let lastBadIdx = -1, sinceLastBad = 0;
+    for (let i = 0; i < datesAfter.length; i++) {
+      const d = datesAfter[i];
+      const dd = data.byDate[d];
+      const failRate = (dd && dd.count) ? dd.fails / dd.count : 0;
+      if (failRate > CONFIG.INCIDENT_OUTAGE_THRESHOLD) {
+        lastBadIdx = i; sinceLastBad = 0;
+      } else if (lastBadIdx >= 0) {
+        sinceLastBad++;
+        if (sinceLastBad >= 2) break; // 2 consecutive good days → outage ended
       }
-    });
-    const chartData = win.dateList.map(d => {
+    }
+
+    const duringDates = lastBadIdx >= 0 ? datesAfter.slice(0, lastBadIdx + 1) : [];
+    const postDates = lastBadIdx >= 0 ? datesAfter.slice(lastBadIdx + 1) : datesAfter;
+
+    const preRows = data.rows.filter(r => datesBefore.includes(r._date));
+    const duringRows = data.rows.filter(r => duringDates.includes(r._date));
+    const postRows = data.rows.filter(r => postDates.includes(r._date));
+
+    const preFails = preRows.filter(r => r._failed).length;
+    const duringFails = duringRows.filter(r => r._failed).length;
+    const postFails = postRows.filter(r => r._failed).length;
+
+    const prePct = preRows.length ? preFails / preRows.length * 100 : 0;
+    const duringPct = duringRows.length ? duringFails / duringRows.length * 100 : 0;
+    const postPct = postRows.length ? postFails / postRows.length * 100 : 0;
+
+    // State decision
+    const recentRows = postRows.slice(-Math.max(50, Math.floor(postRows.length * 0.2)));
+    const recentPct = recentRows.length ? recentRows.filter(r => r._failed).length / recentRows.length * 100 : null;
+    let state;
+    if (!duringRows.length) {
+      state = 'none';
+    } else if (postRows.length >= 2 && recentPct !== null && recentPct < CONFIG.INCIDENT_RECOVERY_THRESHOLD * 100) {
+      state = 'resolved';
+    } else {
+      state = 'active';
+    }
+
+    const chart_data = win.dateList.map(d => {
       const dd = data.byDate[d];
       return dd && dd.count ? +(dd.fails / dd.count * 100).toFixed(1) : 0;
     });
+
+    const outageStartIdx = win.dateList.indexOf(breakDate);
+    const outageEndIdx = duringDates.length ? win.dateList.indexOf(duringDates[duringDates.length - 1]) : -1;
+    const recoveryDate = postDates.length ? postDates[0] : null;
+
+    // Title text
+    let title_html;
+    if (state === 'resolved') {
+      title_html = CONFIG.INCIDENT.title_template
+        .replace('{{break}}', fmtShort(breakDate))
+        .replace('{{recovery}}', recoveryDate ? ` · recovered ${fmtShort(recoveryDate)}` : '');
+    } else if (state === 'active') {
+      title_html = CONFIG.INCIDENT.title_template
+        .replace('{{break}}', fmtShort(breakDate))
+        .replace('{{recovery}}', '');
+    } else {
+      title_html = '<em>No promo incident detected in window</em>';
+    }
+
+    // Stats
+    let stats;
+    if (state === 'resolved') {
+      stats = [
+        { lbl: 'Pre-incident', val: Math.round(prePct).toString(), unit: '%', color: 'default' },
+        { lbl: `During (${duringDates.length}d)`, val: Math.round(duringPct).toString(), unit: '%', color: 'red' },
+        { lbl: 'Post-recovery', val: Math.round(postPct).toString(), unit: '%', color: 'mint' },
+        { lbl: 'Lost queries', val: '~' + duringFails, unit: '', color: 'red' }
+      ];
+    } else if (state === 'active') {
+      stats = [
+        { lbl: `Pre-${fmtShort(breakDate)}`, val: Math.round(prePct).toString(), unit: '%', color: 'default' },
+        { lbl: `Post-${fmtShort(breakDate)}`, val: Math.round(duringPct).toString(), unit: '%', color: 'red' },
+        { lbl: 'Days down', val: String(duringDates.length), unit: '', color: 'red' },
+        { lbl: 'Lost queries', val: '~' + duringFails, unit: '', color: 'red' }
+      ];
+    } else {
+      stats = [];
+    }
+
     return {
-      section_desc: CONFIG.DESCRIPTIONS.incident,
-      tag: 'Active outage',
-      title_html: CONFIG.INCIDENT.title_html,
-      stats: [
-        { lbl: `Pre-${fmtShort(breakDate)}`,  val: String(preFailPct),  unit: '%', color: 'default' },
-        { lbl: `Post-${fmtShort(breakDate)}`, val: String(postFailPct), unit: '%', color: 'red' },
-        { lbl: 'Days down',     val: String(daysDown),     unit: '', color: 'red' },
-        { lbl: 'Lost queries',  val: '~' + postFails,      unit: '', color: 'red' }
-      ],
-      chart_data: chartData,
-      highlight_index: hi >= 0 ? hi : -1
+      state,
+      section_desc: state === 'resolved'
+        ? 'Resolved tool incident + structural language gap'
+        : (state === 'active' ? 'Active outage + structural language gap' : CONFIG.DESCRIPTIONS.incident),
+      tag: state === 'resolved' ? 'Resolved incident' : (state === 'active' ? 'Active outage' : 'No active incident'),
+      title_html,
+      stats,
+      chart_data,
+      outage_start_idx: outageStartIdx,
+      outage_end_idx: outageEndIdx
     };
   }
 
+  // ============================================================
+  // ANALYZE
+  // ============================================================
   function analyze(rawRows) {
     const annotated = rawRows.map(annotate).filter(r => r._ts);
     if (!annotated.length) throw new Error('No rows with a valid "Timestamp (BKK)" column');
@@ -599,7 +731,7 @@
     const inWin = annotated.filter(r => r._date >= win.start && r._date <= win.end);
     if (!inWin.length) throw new Error(`No rows fall inside the window ${win.start} → ${win.end}`);
 
-    // Daily aggregation (counts, fails, and total time → avg latency per day)
+    // Daily aggregation
     const dailyByDate = {};
     win.dateList.forEach(d => { dailyByDate[d] = { count: 0, fails: 0, time: 0 }; });
     inWin.forEach(r => {
@@ -630,7 +762,18 @@
     const avgLatency = sumTime / totalCount;
     const pctUnder15 = Math.round(inWin.filter(r => r._time < 15).length / totalCount * 100);
 
-    // Build tool list, sorted by volume desc
+    // Week-over-week trace volume (last 7d vs prior 7d, anchored at end of window)
+    const endD = new Date(win.end + 'T00:00:00Z');
+    const last7Start = new Date(endD); last7Start.setUTCDate(endD.getUTCDate() - 6);
+    const prev7End = new Date(last7Start); prev7End.setUTCDate(last7Start.getUTCDate() - 1);
+    const prev7Start = new Date(prev7End); prev7Start.setUTCDate(prev7End.getUTCDate() - 6);
+    const last7 = inWin.filter(r => r._ts >= last7Start && r._ts <= new Date(endD.getTime() + 86399999)).length;
+    const prev7 = inWin.filter(r => r._ts >= prev7Start && r._ts <= new Date(prev7End.getTime() + 86399999)).length;
+    const wow = prev7 ? Math.round((last7 - prev7) / prev7 * 100) : 0;
+
+    // Build tool list
+    const incidentTool = CONFIG.INCIDENT.enabled ? CONFIG.INCIDENT.tool : null;
+    const breakDate = CONFIG.INCIDENT.break_date;
     const tools = Object.entries(toolMap).map(([name, data]) => {
       const vol = data.rows.length;
       const fails = data.rows.filter(r => r._failed).length;
@@ -640,23 +783,35 @@
         const dd = data.byDate[d];
         return dd && dd.count ? +(dd.fails / dd.count * 100).toFixed(1) : 0;
       });
+
+      // Recent-window fail rate (last 7 days) — used to detect recovery for the incident tool
+      const recentDates = win.dateList.slice(-7);
+      let recentVol = 0, recentFails = 0;
+      recentDates.forEach(d => { const dd = data.byDate[d]; if (dd) { recentVol += dd.count; recentFails += dd.fails; } });
+      const recentPct = recentVol ? recentFails / recentVol * 100 : null;
+
+      // Status
       let status, pill;
-      if (vol < CONFIG.IDLE_VOL_THRESHOLD) { status = 'idle'; pill = 'IDLE'; }
-      else if (failPct >= 80) { status = 'crit'; pill = 'BROKEN'; }
-      else if (failPct >= 50) { status = 'crit'; pill = 'CRITICAL'; }
-      else if (failPct >= 25) { status = 'warn'; pill = 'WARN'; }
-      else { status = 'ok'; pill = 'HEALTHY'; }
-      return {
-        name, vol,
-        share: +(vol / totalCount * 100).toFixed(1),
-        fail: +failPct.toFixed(1),
-        time: +avgT.toFixed(1),
-        status, pill,
-        daily_fail: dailyFail
-      };
+      if (vol < CONFIG.IDLE_VOL_THRESHOLD) {
+        status = 'idle'; pill = 'IDLE';
+      } else if (name === incidentTool && failPct >= 18 && recentPct !== null && recentPct < CONFIG.INCIDENT_RECOVERY_THRESHOLD * 100) {
+        // Average looks bad because of the outage, but recent days are fine → mark RECOVERED
+        status = 'recovered'; pill = 'RECOVERED';
+      } else if (failPct >= 80) {
+        status = 'crit'; pill = 'BROKEN';
+      } else if (failPct >= 40) {
+        status = 'crit'; pill = 'CRITICAL';
+      } else if (failPct >= 25) {
+        status = 'warn'; pill = 'WARN';
+      } else if (failPct >= 10) {
+        status = 'warn'; pill = 'WARN';
+      } else {
+        status = 'ok'; pill = 'HEALTHY';
+      }
+      return { name, vol, share: +(vol / totalCount * 100).toFixed(1), fail: +failPct.toFixed(1), time: +avgT.toFixed(1), status, pill, daily_fail: dailyFail };
     }).sort((a, b) => b.vol - a.vol);
 
-    // Language gap
+    // Language gap (overall)
     let enT = 0, enF = 0, thT = 0, thF = 0;
     inWin.forEach(r => {
       if (r._lang === 'th') { thT++; if (r._failed) thF++; }
@@ -669,35 +824,41 @@
     // Per-tool language
     const langByTool = {};
     inWin.forEach(r => {
-      if (!langByTool[r._tool]) langByTool[r._tool] = { en_t:0,en_f:0,th_t:0,th_f:0 };
+      if (!langByTool[r._tool]) langByTool[r._tool] = { en_t:0, en_f:0, th_t:0, th_f:0 };
       const s = langByTool[r._tool];
       if (r._lang === 'th') { s.th_t++; if (r._failed) s.th_f++; }
       else { s.en_t++; if (r._failed) s.en_f++; }
     });
 
-    // Brands
+    // Brands (failed product searches across all product-search tools)
     const brandCounts = {};
     inWin.forEach(r => {
-      if (r._tool === 'product_recommendation' && r._failed) {
+      if (CONFIG.PRODUCT_SEARCH_TOOLS.includes(r._tool) && r._failed) {
         const brand = extractBrand((r._toolInput + ' ' + r._question));
         if (brand) brandCounts[brand] = (brandCounts[brand] || 0) + 1;
       }
     });
     const brandTotal = Object.values(brandCounts).reduce((a, b) => a + b, 0);
 
-    // Status banner — auto-detect or override
+    // ============================================================
+    // Status banner — auto-detect biggest issue by VOLUME × FAIL
+    // ============================================================
     let statusBanner;
     if (CONFIG.STATUS_BANNER_OVERRIDE) {
       statusBanner = Object.assign({ show: true, icon: '!' }, CONFIG.STATUS_BANNER_OVERRIDE);
     } else {
-      const broken = tools.filter(t => t.status === 'crit' && t.fail >= 80 && t.vol >= CONFIG.IDLE_VOL_THRESHOLD);
-      if (broken.length) {
-        const lead = broken[0];
+      // Find a tool that is currently broken/critical AND has high impact
+      const candidates = tools.filter(t => t.vol >= CONFIG.IDLE_VOL_THRESHOLD && t.status !== 'recovered' && t.status !== 'ok');
+      candidates.sort((a, b) => (b.vol * b.fail) - (a.vol * a.fail));
+      const lead = candidates[0];
+      if (lead && lead.fail >= 25) {
+        const unresolved = Math.round(lead.vol * lead.fail / 100);
+        const isOutage = lead.fail >= 80;
         statusBanner = {
           show: true, icon: '!',
-          title: `${broken.length} ACTIVE INCIDENT${broken.length > 1 ? 'S' : ''}`,
-          description: `${lead.name} failure rate at ${Math.round(lead.fail)}%${broken.length > 1 ? ` · +${broken.length - 1} more critical` : ''}`,
-          tag: 'P0 · ENGINEERING ON-CALL'
+          title: isOutage ? '1 ACTIVE INCIDENT' : 'TOP PRIORITY',
+          description: `${lead.name} fails ${Math.round(lead.fail)}% across ${lead.vol.toLocaleString()} queries · ${unresolved.toLocaleString()} unresolved`,
+          tag: isOutage ? 'P0 · ENGINEERING ON-CALL' : 'P0 · KNOWLEDGE OPS'
         };
       } else {
         statusBanner = { show: false };
@@ -706,14 +867,25 @@
 
     const critCount = tools.filter(t => t.status === 'crit').length;
     const okCount = tools.filter(t => t.status === 'ok').length;
+    const recoveredCount = tools.filter(t => t.status === 'recovered').length;
+
+    const toolsDesc = `${tools.length} tools · ${critCount} critical${recoveredCount ? ` · ${recoveredCount} recovered` : ''} · ${okCount} healthy`;
+
+    // KPI: daily descriptor
+    const dailyDescBits = [];
+    if (wow > 5) dailyDescBits.push(`Traffic ↑${wow}% WoW`);
+    else if (wow < -5) dailyDescBits.push(`Traffic ↓${Math.abs(wow)}% WoW`);
+    else dailyDescBits.push('Traffic stable WoW');
+    dailyDescBits.push(`unresolved ${(totalFails/totalCount*100).toFixed(0)}%`);
+    const dailyDesc = dailyDescBits.join(' · ');
 
     return {
       meta: {
-        window: `${win.dateList.length}D`,
+        window: win.dateList.length >= 30 ? `${win.dateList.length}D · FULL` : `${win.dateList.length}D`,
         range: fmtRange(win.start, win.end),
         tz: CONFIG.TIMEZONE_LABEL,
-        footer_source: CONFIG.FOOTER.source,
-        footer_range: `${CONFIG.TIMEZONE_LABEL} ${win.start} → ${win.end}`,
+        footer_source: `${CONFIG.FOOTER.source} · ${totalCount.toLocaleString()} ROWS`,
+        footer_range: `${CONFIG.TIMEZONE_LABEL} ${win.start} → ${win.end} · ${win.dateList.length}D`,
         footer_label: CONFIG.FOOTER.label
       },
       status_banner: statusBanner,
@@ -722,8 +894,9 @@
           label: 'Total traces',
           value: totalCount.toLocaleString(),
           unit: '', color: 'default',
-          meta: `${win.dateList.length}d window`,
-          meta_arrow: '', meta_trend: 'flat'
+          meta: wow >= 0 ? `+${wow}% week-over-week` : `${wow}% week-over-week`,
+          meta_arrow: wow >= 0 ? '↗' : '↘',
+          meta_trend: wow > 5 ? 'up' : (wow < -5 ? 'down' : 'flat')
         },
         {
           label: 'Avg latency',
@@ -737,7 +910,7 @@
           value: Math.round(totalFails / totalCount * 100).toString(), unit: '%',
           color: 'red',
           meta: 'across all tools',
-          meta_arrow: '', meta_trend: 'down'
+          meta_arrow: '', meta_trend: 'flat'
         },
         {
           label: 'TH ↔ EN gap',
@@ -748,30 +921,31 @@
         }
       ],
       latency: {
+        title: `Average latency · ${win.dateList.length} days`,
         section_desc: CONFIG.DESCRIPTIONS.latency,
         card_title: `Avg latency by day (seconds) · target line at ${CONFIG.LATENCY_TARGET}s`,
         card_meta: `${win.dateList.length}d · ${CONFIG.TIMEZONE_LABEL}`,
         target: CONFIG.LATENCY_TARGET,
-        dates: win.dateList.map(d => d.slice(-2)),
+        dates: win.dateList,
+        labels: win.dateList.map(fmtShortLabel),
         values: win.dateList.map(d => dailyByDate[d].count ? +(dailyByDate[d].time / dailyByDate[d].count).toFixed(1) : 0)
       },
       daily: {
-        section_desc: CONFIG.DESCRIPTIONS.daily,
+        section_desc: dailyDesc,
         card_title: 'Traces (bars) · unresolved % (line)',
-        dates: win.dateList.map(d => d.slice(-2)),
+        card_meta: `${win.dateList.length}d`,
+        dates: win.dateList,
+        labels: win.dateList.map(fmtShortLabel),
         volume: win.dateList.map(d => dailyByDate[d].count),
         fail_pct: win.dateList.map(d => dailyByDate[d].count ? +(dailyByDate[d].fails / dailyByDate[d].count * 100).toFixed(1) : 0)
       },
-      tools: {
-        section_desc: `${tools.length} tools · ${critCount} critical · ${okCount} healthy`,
-        items: tools
-      },
+      tools: { section_desc: toolsDesc, items: tools },
       incident: buildIncident(toolMap, win),
       languages: {
         card_title: 'Language gap by tool · fail %',
         card_meta: 'EN · TH',
         rows: tools.slice(0, 6).map(t => {
-          const s = langByTool[t.name] || { en_t:0,en_f:0,th_t:0,th_f:0 };
+          const s = langByTool[t.name] || { en_t:0, en_f:0, th_t:0, th_f:0 };
           return {
             tool: t.name,
             en: s.en_t ? +(s.en_f / s.en_t * 100).toFixed(1) : 0,
@@ -782,11 +956,8 @@
       brands: {
         section_desc: CONFIG.DESCRIPTIONS.brands,
         card_title: `Failed product searches by brand · ${brandTotal} total`,
-        card_meta: 'Top 10',
-        items: Object.entries(brandCounts)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 10)
-          .map(([name, value]) => ({ name, value }))
+        card_meta: `Top 10 · ${win.dateList.length}d`,
+        items: Object.entries(brandCounts).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([name, value]) => ({ name, value }))
       },
       recommendations: {
         section_desc: CONFIG.DESCRIPTIONS.recommendations,
@@ -800,9 +971,7 @@
     el.textContent = `⚠ ${msg}`;
     el.classList.add('show');
   }
-  function clearError() {
-    document.getElementById('errBanner').classList.remove('show');
-  }
+  function clearError() { document.getElementById('errBanner').classList.remove('show'); }
 
   // ============================================================
   // RENDERERS
@@ -856,9 +1025,7 @@
         ctx.lineWidth = 1;
         ctx.setLineDash([4, 4]);
         ctx.beginPath();
-        ctx.moveTo(left, yPos);
-        ctx.lineTo(right, yPos);
-        ctx.stroke();
+        ctx.moveTo(left, yPos); ctx.lineTo(right, yPos); ctx.stroke();
         ctx.setLineDash([]);
         ctx.fillStyle = '#FBBF24';
         ctx.font = '500 9px "Geist Mono", ui-monospace, monospace';
@@ -870,10 +1037,11 @@
   }
 
   function renderLatencyChart(latency) {
+    document.getElementById('latencyTitle').textContent = latency.title || 'Average latency';
     document.getElementById('latencyDesc').textContent = latency.section_desc || '';
     document.getElementById('latencyCardTitle').textContent = latency.card_title || '';
     document.getElementById('latencyCardMeta').textContent = latency.card_meta || '';
-    const labels = (latency.dates || []).map(d => 'Apr ' + d);
+    const labels = latency.labels || [];
     const target = latency.target || 8;
     const vals = (latency.values || []).filter(v => v > 0);
     const maxVal = vals.length ? Math.max(target, ...vals) : target;
@@ -889,7 +1057,7 @@
           borderColor: C.mint,
           backgroundColor: 'rgba(52, 211, 153, 0.10)',
           borderWidth: 2,
-          pointRadius: (ctx) => ctx.parsed.y > target ? 4 : 3,
+          pointRadius: (ctx) => ctx.parsed.y > target ? 3.5 : 2,
           pointBackgroundColor: (ctx) => ctx.parsed.y > target ? C.amber : C.surface,
           pointBorderColor: (ctx) => ctx.parsed.y > target ? C.amber : C.mint,
           pointBorderWidth: 1.5,
@@ -909,12 +1077,12 @@
           }
         },
         scales: {
-          x: { ticks: { color: C.text3, font: { size: 9 } }, grid: { display: false } },
+          x: { ticks: { color: C.text3, font: { size: 9 }, autoSkip: true, maxRotation: 0, maxTicksLimit: 14 }, grid: { display: false } },
           y: {
             beginAtZero: false,
             suggestedMin: Math.max(0, minVal - 1),
             suggestedMax: maxVal + 2,
-            ticks: { color: C.text3, font: { size: 9 }, callback: v => v + 's', stepSize: 1 },
+            ticks: { color: C.text3, font: { size: 9 }, callback: v => v + 's' },
             grid: { color: C.grid }
           }
         }
@@ -926,23 +1094,24 @@
   function renderDailyChart(daily) {
     document.getElementById('dailyDesc').textContent = daily.section_desc || '';
     document.getElementById('dailyCardTitle').textContent = daily.card_title || '';
-    const labels = (daily.dates || []).map(d => 'Apr ' + d);
+    document.getElementById('dailyCardMeta').textContent = daily.card_meta || '';
+    const labels = daily.labels || [];
 
     charts.daily = new Chart(document.getElementById('dailyChart'), {
       data: {
         labels,
         datasets: [
-          { type: 'bar', label: 'Traces', data: daily.volume, backgroundColor: 'rgba(245,245,244,0.85)', borderRadius: 3, yAxisID: 'y', order: 2, barPercentage: 0.65 },
-          { type: 'line', label: 'Unresolved %', data: daily.fail_pct, borderColor: C.red, backgroundColor: C.red, borderWidth: 2, pointRadius: 3, pointBackgroundColor: C.surface, pointBorderColor: C.red, pointBorderWidth: 1.5, tension: 0.3, yAxisID: 'y1', order: 1 }
+          { type: 'bar', label: 'Traces', data: daily.volume, backgroundColor: 'rgba(245,245,244,0.85)', borderRadius: 2, yAxisID: 'y', order: 2, barPercentage: 0.7, categoryPercentage: 0.9 },
+          { type: 'line', label: 'Unresolved %', data: daily.fail_pct, borderColor: C.red, backgroundColor: C.red, borderWidth: 2, pointRadius: 2, pointBackgroundColor: C.surface, pointBorderColor: C.red, pointBorderWidth: 1.5, tension: 0.3, yAxisID: 'y1', order: 1 }
         ]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
         plugins: { legend: { display: false }, tooltip: { backgroundColor: '#08090C', titleColor: C.text1, bodyColor: C.text2, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, padding: 10 } },
         scales: {
-          x: { ticks: { color: C.text3, font: { size: 9 } }, grid: { display: false } },
-          y: { position: 'left', beginAtZero: true, ticks: { color: C.text3, font: { size: 9 }, stepSize: 200 }, grid: { color: C.grid, drawTicks: false } },
-          y1: { position: 'right', beginAtZero: true, max: 50, grid: { drawOnChartArea: false }, ticks: { color: C.red, font: { size: 9 }, callback: v => v + '%' } }
+          x: { ticks: { color: C.text3, font: { size: 9 }, autoSkip: true, maxRotation: 0, maxTicksLimit: 14 }, grid: { display: false } },
+          y: { position: 'left', beginAtZero: true, ticks: { color: C.text3, font: { size: 9 } }, grid: { color: C.grid, drawTicks: false } },
+          y1: { position: 'right', beginAtZero: true, max: 60, grid: { drawOnChartArea: false }, ticks: { color: C.red, font: { size: 9 }, callback: v => v + '%' } }
         }
       }
     });
@@ -954,10 +1123,9 @@
     const grid = document.getElementById('toolGrid');
     grid.innerHTML = '';
 
-    // build cards
     tools.forEach((t, i) => {
       const failColorClass = t.fail >= 50 ? 'red' : t.fail >= 25 ? 'amber' : 'mint';
-      const pillKey = t.status === 'crit' ? 'crit' : t.status === 'warn' ? 'warn' : t.status === 'ok' ? 'ok' : 'idle';
+      const pillKey = ['crit','warn','ok','recovered','idle'].includes(t.status) ? t.status : 'idle';
       const card = document.createElement('div');
       card.className = `tool-row ${t.status}`;
       card.innerHTML = `
@@ -975,14 +1143,21 @@
       grid.appendChild(card);
     });
 
-    // build sparklines (after DOM insertion so canvases exist)
     charts.tools = [];
     tools.forEach((t, i) => {
-      const sparkColor = t.status === 'crit' ? C.red : t.status === 'warn' ? C.amber : t.status === 'ok' ? C.mint : C.text3;
-      const fillColor = t.status === 'crit' ? 'rgba(255, 84, 112, 0.12)' : t.status === 'warn' ? 'rgba(251, 191, 36, 0.10)' : t.status === 'ok' ? 'rgba(52, 211, 153, 0.10)' : 'rgba(255, 255, 255, 0.04)';
+      const sparkColor = t.status === 'crit' ? C.red
+                       : t.status === 'warn' ? C.amber
+                       : t.status === 'ok' ? C.mint
+                       : t.status === 'recovered' ? C.cyan
+                       : C.text3;
+      const fillColor = t.status === 'crit' ? 'rgba(255, 84, 112, 0.12)'
+                      : t.status === 'warn' ? 'rgba(251, 191, 36, 0.10)'
+                      : t.status === 'ok' ? 'rgba(52, 211, 153, 0.10)'
+                      : t.status === 'recovered' ? 'rgba(56, 189, 248, 0.10)'
+                      : 'rgba(255, 255, 255, 0.04)';
       const chart = new Chart(document.getElementById(`tool-spark-${i}`), {
         type: 'line',
-        data: { labels: daily.dates, datasets: [{ data: t.daily_fail, borderColor: sparkColor, backgroundColor: fillColor, fill: true, tension: 0.35, pointRadius: 0, borderWidth: 1.5 }] },
+        data: { labels: daily.labels, datasets: [{ data: t.daily_fail, borderColor: sparkColor, backgroundColor: fillColor, fill: true, tension: 0.35, pointRadius: 0, borderWidth: 1.5 }] },
         options: {
           responsive: true, maintainAspectRatio: false,
           plugins: { legend: { display: false }, tooltip: { enabled: false } },
@@ -994,14 +1169,27 @@
   }
 
   function renderIncident(inc, daily) {
+    const card = document.getElementById('incidentCard');
+    const tag = document.getElementById('incidentTag');
+    const title = document.getElementById('incidentTitle');
+
     document.getElementById('incidentDesc').textContent = inc.section_desc || '';
-    document.getElementById('incidentTag').textContent = inc.tag || '';
-    document.getElementById('incidentTitle').innerHTML = inc.title_html || '';
+
+    // Apply state class to card / tag / title
+    card.classList.remove('active','resolved','none');
+    tag.classList.remove('active','resolved','none');
+    title.classList.remove('active','resolved','none');
+    card.classList.add(inc.state);
+    tag.classList.add(inc.state);
+    title.classList.add(inc.state);
+
+    tag.textContent = inc.tag || '';
+    title.innerHTML = inc.title_html || '';
 
     const statsEl = document.getElementById('incidentStats');
     statsEl.innerHTML = '';
     (inc.stats || []).forEach(s => {
-      const colorClass = s.color === 'red' ? 'red' : '';
+      const colorClass = ['red','mint','cyan'].includes(s.color) ? s.color : '';
       const unitHtml = s.unit ? `<span style="font-size:18px;">${escapeHtml(s.unit)}</span>` : '';
       const div = document.createElement('div');
       div.className = 'incident-stat';
@@ -1009,26 +1197,65 @@
       statsEl.appendChild(div);
     });
 
-    const highlight = Number.isInteger(inc.highlight_index) ? inc.highlight_index : -1;
+    const outageStart = Number.isInteger(inc.outage_start_idx) ? inc.outage_start_idx : -1;
+    const outageEnd = Number.isInteger(inc.outage_end_idx) ? inc.outage_end_idx : -1;
+    const recoveryIdx = (outageEnd >= 0 && outageEnd + 1 < (daily.dates || []).length) ? outageEnd + 1 : -1;
+    const baseColor = inc.state === 'resolved' ? C.cyan : (inc.state === 'active' ? C.red : C.text3);
+    const baseFill = inc.state === 'resolved' ? 'rgba(56, 189, 248, 0.12)' : (inc.state === 'active' ? 'rgba(255, 84, 112, 0.15)' : 'rgba(255, 255, 255, 0.04)');
+
     charts.promo = new Chart(document.getElementById('promoChart'), {
       type: 'line',
       data: {
-        labels: (daily.dates || []).map(d => 'Apr ' + d),
+        labels: daily.labels || [],
         datasets: [{
           data: inc.chart_data || [],
-          borderColor: C.red, backgroundColor: 'rgba(255, 84, 112, 0.15)', borderWidth: 2,
-          pointRadius: (ctx) => ctx.dataIndex === highlight ? 5 : 2.5,
-          pointBackgroundColor: (ctx) => ctx.dataIndex === highlight ? C.red : C.surface,
-          pointBorderColor: C.red,
-          pointBorderWidth: (ctx) => ctx.dataIndex === highlight ? 2 : 1.5,
-          fill: true, tension: 0.15
+          borderColor: baseColor,
+          backgroundColor: baseFill,
+          segment: {
+            borderColor: (ctx) => {
+              const i = ctx.p0DataIndex;
+              if (outageStart >= 0 && outageEnd >= outageStart && i >= outageStart && i < outageEnd) return C.red;
+              return baseColor;
+            },
+            backgroundColor: (ctx) => {
+              const i = ctx.p0DataIndex;
+              if (outageStart >= 0 && outageEnd >= outageStart && i >= outageStart && i < outageEnd) return 'rgba(255, 84, 112, 0.20)';
+              return baseFill;
+            }
+          },
+          borderWidth: 2,
+          pointRadius: (ctx) => {
+            const i = ctx.dataIndex;
+            if (i === outageStart && outageStart >= 0) return 5;
+            if (i === recoveryIdx && recoveryIdx >= 0) return 5;
+            return 1.8;
+          },
+          pointBackgroundColor: (ctx) => {
+            const i = ctx.dataIndex;
+            if (i === outageStart) return C.red;
+            if (i === recoveryIdx) return C.mint;
+            return C.surface;
+          },
+          pointBorderColor: (ctx) => {
+            const i = ctx.dataIndex;
+            if (i === outageStart) return C.red;
+            if (i === recoveryIdx) return C.mint;
+            if (outageStart >= 0 && outageEnd >= outageStart && i > outageStart && i <= outageEnd) return C.red;
+            return baseColor;
+          },
+          pointBorderWidth: (ctx) => (ctx.dataIndex === outageStart || ctx.dataIndex === recoveryIdx) ? 2 : 1.2,
+          fill: true,
+          tension: 0.15
         }]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#08090C', titleColor: C.text1, bodyColor: C.text2, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, callbacks: { label: ctx => ctx.parsed.y.toFixed(1) + '% failed' } } },
+        plugins: {
+          legend: { display: false },
+          tooltip: { backgroundColor: '#08090C', titleColor: C.text1, bodyColor: C.text2, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, callbacks: { label: ctx => ctx.parsed.y.toFixed(1) + '% failed' } }
+        },
         scales: {
-          x: { ticks: { color: C.text3, font: { size: 9 } }, grid: { display: false } },
+          x: { ticks: { color: C.text3, font: { size: 9 }, autoSkip: true, maxRotation: 0, maxTicksLimit: 10 }, grid: { display: false } },
           y: { beginAtZero: true, max: 100, ticks: { color: C.text3, font: { size: 9 }, callback: v => v + '%', stepSize: 25 }, grid: { color: C.grid } }
         }
       }
@@ -1046,8 +1273,8 @@
       row.innerHTML = `
         <div class="tool-lbl">${escapeHtml(d.tool)}</div>
         <div class="lang-bar-stack">
-          <div class="lang-bar"><div class="fill en" style="width:${d.en}%;"></div><div class="pct-label">EN ${Number(d.en).toFixed(0)}%</div></div>
-          <div class="lang-bar"><div class="fill th" style="width:${d.th}%;"></div><div class="pct-label">TH ${Number(d.th).toFixed(0)}%</div></div>
+          <div class="lang-bar"><div class="fill en" style="width:${Math.min(100, d.en)}%;"></div><div class="pct-label">EN ${Number(d.en).toFixed(0)}%</div></div>
+          <div class="lang-bar"><div class="fill th" style="width:${Math.min(100, d.th)}%;"></div><div class="pct-label">TH ${Number(d.th).toFixed(0)}%</div></div>
         </div>
       `;
       wrap.appendChild(row);
@@ -1067,8 +1294,8 @@
           data: items.map(i => i.value),
           backgroundColor: (ctx) => {
             const v = ctx.parsed?.y ?? 0;
-            if (v >= 15) return C.red;
-            if (v >= 8) return C.amber;
+            if (v >= 25) return C.red;
+            if (v >= 12) return C.amber;
             return 'rgba(245, 245, 244, 0.7)';
           },
           borderRadius: 3, barPercentage: 0.7
@@ -1082,7 +1309,7 @@
         },
         scales: {
           x: { grid: { display: false }, ticks: { color: C.text3, font: { size: 9 }, maxRotation: 35, minRotation: 35 } },
-          y: { beginAtZero: true, ticks: { color: C.text3, font: { size: 9 }, stepSize: 5 }, grid: { color: C.grid } }
+          y: { beginAtZero: true, ticks: { color: C.text3, font: { size: 9 } }, grid: { color: C.grid } }
         }
       }
     });
@@ -1116,9 +1343,6 @@
     document.getElementById('lastUpdated').textContent = `LOADED ${hh}:${mm}`;
   }
 
-  // ============================================================
-  // CHART CLEANUP
-  // ============================================================
   function destroyCharts() {
     if (charts.daily) charts.daily.destroy();
     if (charts.latency) charts.latency.destroy();
@@ -1128,9 +1352,6 @@
     charts = {};
   }
 
-  // ============================================================
-  // ESCAPE — for safe HTML insertion of user-editable strings
-  // ============================================================
   function escapeHtml(s) {
     if (s === null || s === undefined) return '';
     return String(s).replace(/[&<>"']/g, ch => ({
@@ -1158,10 +1379,7 @@
 
   async function init(triggeredByButton = false) {
     const btn = document.getElementById('refreshBtn');
-    if (triggeredByButton) {
-      btn.disabled = true;
-      btn.classList.add('spinning');
-    }
+    if (triggeredByButton) { btn.disabled = true; btn.classList.add('spinning'); }
     try {
       const data = await loadData();
       clearError();
@@ -1172,7 +1390,6 @@
     } finally {
       document.getElementById('loadingOverlay').classList.add('hide');
       if (triggeredByButton) {
-        // brief delay so the spin animation reads as "doing something"
         setTimeout(() => { btn.disabled = false; btn.classList.remove('spinning'); }, 400);
       }
     }
