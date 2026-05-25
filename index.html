@@ -83,10 +83,10 @@
   .err-banner.show { display: block; }
 
   /* ========== HERO KPIs ========== */
-  .hero-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 32px; }
-  .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 22px 24px; }
+  .hero-kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 32px; }
+  .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 22px 22px; }
   .kpi-card .kpi-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-3); margin-bottom: 14px; }
-  .kpi-card .kpi-value { font-family: var(--display); font-size: 64px; line-height: 0.95; letter-spacing: 0.01em; }
+  .kpi-card .kpi-value { font-family: var(--display); font-size: 56px; line-height: 0.95; letter-spacing: 0.01em; }
   .kpi-card .kpi-value sup { font-size: 26px; opacity: 0.6; vertical-align: top; margin-left: 2px; }
   .kpi-card .kpi-value.red { color: var(--red); }
   .kpi-card .kpi-value.mint { color: var(--mint); }
@@ -197,10 +197,25 @@
   .loading-overlay.hide { opacity: 0; pointer-events: none; }
   .loading-overlay .spinner { width: 32px; height: 32px; border: 2px solid var(--border-2); border-top-color: var(--red); border-radius: 50%; animation: spin 0.9s linear infinite; }
 
+  /* ========== LOST DEMAND ENHANCEMENTS ========== */
+  .ld-kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; }
+  .ld-kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; }
+  .ld-kpi .lbl { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+  .ld-kpi .val { font-family: var(--display); font-size: 32px; line-height: 1; letter-spacing: 0.02em; color: var(--text-1); }
+  .ld-kpi .val.red { color: var(--red); }
+  .ld-kpi .val.amber { color: var(--amber); }
+  .ld-kpi .val.cyan { color: var(--cyan); }
+  .ld-kpi .val .small { font-size: 18px; opacity: 0.6; }
+  .ld-kpi .val .lbl-inline { font-size: 18px; color: var(--text-3); }
+  .ld-kpi .sub { font-family: var(--mono); font-size: 10px; color: var(--text-2); margin-top: 6px; }
+  .ld-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
   /* ========== RESPONSIVE ========== */
   @media (max-width: 1100px) {
     .page { padding: 24px 20px; }
     .hero-kpis { grid-template-columns: repeat(2, 1fr); }
+    .ld-kpi-strip { grid-template-columns: repeat(2, 1fr); }
+    .ld-grid { grid-template-columns: 1fr; }
     .tool-grid { grid-template-columns: 1fr; }
     .tool-row { grid-template-columns: 1fr 1fr; gap: 12px; }
     .row-2 { grid-template-columns: 1fr; }
@@ -332,13 +347,29 @@
       <h2 class="sec-title">Lost demand</h2>
       <div class="sec-desc" id="brandsDesc">—</div>
     </div>
-    <div class="card">
-      <div class="card-head">
-        <div class="card-title" id="brandsCardTitle">—</div>
-        <div class="card-meta" id="brandsCardMeta">—</div>
+
+    <!-- KPI strip -->
+    <div class="ld-kpi-strip" id="ldKpiStrip"></div>
+
+    <!-- Brand chart + category chart side-by-side -->
+    <div class="ld-grid">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title" id="brandsCardTitle">—</div>
+          <div class="card-meta" id="brandsCardMeta">—</div>
+        </div>
+        <div class="chart-wrap" style="height: 240px;">
+          <canvas id="brandChart" role="img" aria-label="Failed product searches by brand"></canvas>
+        </div>
       </div>
-      <div class="chart-wrap" style="height: 220px;">
-        <canvas id="brandChart" role="img" aria-label="Failed product searches by brand"></canvas>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title" id="categoryCardTitle">By sport / category · where intent lives</div>
+          <div class="card-meta" id="categoryCardMeta">—</div>
+        </div>
+        <div class="chart-wrap" style="height: 240px;">
+          <canvas id="categoryChart" role="img" aria-label="Failed product searches by category"></canvas>
+        </div>
       </div>
     </div>
   </section>
@@ -417,6 +448,29 @@
 
     // Tools considered "product search" for lost-demand brand extraction
     PRODUCT_SEARCH_TOOLS: ['product_recommendation','product_guide','product_comparison','stock_check'],
+
+    // Lost-demand category patterns — regex scanned against the Question.
+    // Order matters: first match wins. Anything unmatched falls into "Specific model lookups"
+    // (because customers typing exact model names like "Nike Revolution 8 HQ2415-102" land here).
+    LOST_DEMAND_CATEGORIES: [
+      { name: 'Running',              pattern: 'running|วิ่ง|jogger|marathon|มาราธอน|novablast|metaspeed|cielo|kayano|cloudmonster|alphafly|pegasus|magnify' },
+      { name: 'Football / Futsal',    pattern: 'football|soccer|ฟุตบอล|ฟุตซอล|futsal|cleat|stud|สตั๊ด|kipsta|ginka' },
+      { name: 'Tennis',               pattern: 'tennis|เทนนิส' },
+      { name: 'Badminton',            pattern: 'badminton|แบดมินตัน|แบด|lining|halbartech|yonex' },
+      { name: 'Volleyball',           pattern: 'volleyball|วอลเลย์' },
+      { name: 'Basketball',           pattern: 'basketball|บาสเก็ตบอล' },
+      { name: 'Casual / Lifestyle',   pattern: 'casual|lifestyle|sneaker|ลำลอง|ไลฟ์สไตล์|crocs|classic|574|instapump' },
+      { name: 'Walking / Everyday',   pattern: 'เดินนาน|ใส่เดิน|ใส่ยืน|walking|lacoste|ลาคอส' },
+      { name: 'Hiking / Trail',       pattern: 'hiking|trail|trekking|เดินป่า|เทรล|teva' },
+      { name: 'Apparel',              pattern: 'shirt|t-shirt|jersey|pants|shorts|jacket|hoodie|กางเกง|เสื้อ|กระโปรง' },
+      { name: 'Bags / Accessories',   pattern: 'bag|backpack|กระเป๋า|เป้|jibbitz|จิบบิท' },
+      { name: 'Swimming',             pattern: 'swim|ว่ายน้ำ|goggles|speedo' },
+      { name: 'Golf',                 pattern: 'golf|กอล์ฟ' },
+      { name: 'Cycling',              pattern: 'cycling|bike|จักรยาน|spinning' },
+      { name: 'Fitness / Gym',        pattern: 'gym|fitness|workout|treadmill|dumbbell|kettlebell|ฟิตเนส|ออกกำลังกาย|ลู่วิ่ง|ดัมเบล' },
+      { name: 'Shoe accessories',     pattern: 'สเปร|spray|insole|lace|sock|ถุงเท้า|กันลื่น' },
+      { name: 'Safety / Work',        pattern: 'safety|เซฟตี้|work boot' },
+    ],
 
     // Idle threshold: tools with fewer than this many traces are marked IDLE regardless of fail rate
     IDLE_VOL_THRESHOLD: 30,
@@ -762,6 +816,16 @@
     const avgLatency = sumTime / totalCount;
     const pctUnder15 = Math.round(inWin.filter(r => r._time < 15).length / totalCount * 100);
 
+    // Messages: count both sides of each turn — user message (Question) + agent message (Agent Response)
+    const userMsgs  = inWin.filter(r => String(r._question || '').trim() !== '').length;
+    const agentMsgs = inWin.filter(r => String((r._raw && r._raw['Agent Response']) || '').trim() !== '').length;
+    const totalMessages = userMsgs + agentMsgs;
+
+    // Unique sessions in the window
+    const sessionSet = new Set();
+    inWin.forEach(r => { const s = String((r._raw && r._raw['Session ID']) || '').trim(); if (s) sessionSet.add(s); });
+    const totalSessions = sessionSet.size;
+
     // Week-over-week trace volume (last 7d vs prior 7d, anchored at end of window)
     const endD = new Date(win.end + 'T00:00:00Z');
     const last7Start = new Date(endD); last7Start.setUTCDate(endD.getUTCDate() - 6);
@@ -841,6 +905,77 @@
     const brandTotal = Object.values(brandCounts).reduce((a, b) => a + b, 0);
 
     // ============================================================
+    // LOST DEMAND — extended analysis
+    // ============================================================
+    const failedProductRows = inWin.filter(r => CONFIG.PRODUCT_SEARCH_TOOLS.includes(r._tool) && r._failed);
+    const totalFailedProduct = failedProductRows.length;
+
+    // Sessions that hit at least one failed product search
+    const ldSessions = new Set();
+    failedProductRows.forEach(r => { const s = String((r._raw && r._raw['Session ID']) || '').trim(); if (s) ldSessions.add(s); });
+
+    // Language split among lost-demand
+    let ldThai = 0, ldEng = 0;
+    failedProductRows.forEach(r => { if (r._lang === 'th') ldThai++; else ldEng++; });
+    const ldThaiPct = totalFailedProduct ? Math.round(ldThai / totalFailedProduct * 100) : 0;
+    const ldEngPct  = totalFailedProduct ? Math.round(ldEng  / totalFailedProduct * 100) : 0;
+
+    // Daily volume (failed product searches per day)
+    const ldDaily = {};
+    win.dateList.forEach(d => { ldDaily[d] = 0; });
+    failedProductRows.forEach(r => { if (ldDaily[r._date] !== undefined) ldDaily[r._date]++; });
+    const ldVals = Object.values(ldDaily);
+    const ldDailyAvg = ldVals.length ? Math.round(ldVals.reduce((a,b)=>a+b,0) / ldVals.length) : 0;
+    const ldDailyMax = ldVals.length ? Math.max(...ldVals) : 0;
+    const ldDailyMin = ldVals.length ? Math.min(...ldVals) : 0;
+
+    // Categorize each failed product query
+    const catRegexes = (CONFIG.LOST_DEMAND_CATEGORIES || []).map(c => ({ name: c.name, re: new RegExp(c.pattern, 'i') }));
+    const categoryCounts = {};
+    catRegexes.forEach(c => { categoryCounts[c.name] = 0; });
+    categoryCounts['Specific model lookups'] = 0;
+    failedProductRows.forEach(r => {
+      const text = (r._question + ' ' + r._toolInput);
+      let matched = null;
+      for (const c of catRegexes) { if (c.re.test(text)) { matched = c.name; break; } }
+      categoryCounts[matched || 'Specific model lookups']++;
+    });
+    // Sort categories by count desc, drop zeros
+    const categorySorted = Object.entries(categoryCounts)
+      .filter(([,v]) => v > 0)
+      .sort((a,b) => b[1] - a[1]);
+
+    // Build the 4 KPI cards for the Lost Demand strip
+    const lostDemandKpis = [
+      {
+        label: 'Failed product queries',
+        value: totalFailedProduct.toLocaleString(),
+        sub: `${CONFIG.PRODUCT_SEARCH_TOOLS.join(' + ').replace(/_/g,' ')} · ${win.dateList.length}d`,
+        color: 'red'
+      },
+      {
+        label: 'Sessions impacted',
+        value: ldSessions.size.toLocaleString(),
+        sub: totalSessions ? `${(ldSessions.size / totalSessions * 100).toFixed(1)}% of ${totalSessions.toLocaleString()} sessions hit a wall` : '—',
+        color: 'amber'
+      },
+      {
+        label: 'Language split',
+        value: ldThaiPct,
+        valueSuffix: '<span class="small">%</span> <span class="lbl-inline">TH</span>',
+        sub: `${ldThai.toLocaleString()} TH · ${ldEng.toLocaleString()} EN${ldThaiPct > ldEngPct + 10 ? ' · TH-heavy gap' : ''}`,
+        color: 'default'
+      },
+      {
+        label: 'Daily volume',
+        value: '~' + ldDailyAvg,
+        valueSuffix: '<span class="small">/d</span>',
+        sub: `stable · peak ${ldDailyMax} · floor ${ldDailyMin}`,
+        color: 'cyan'
+      }
+    ];
+
+    // ============================================================
     // Status banner — auto-detect biggest issue by VOLUME × FAIL
     // ============================================================
     let statusBanner;
@@ -897,6 +1032,13 @@
           meta: wow >= 0 ? `+${wow}% week-over-week` : `${wow}% week-over-week`,
           meta_arrow: wow >= 0 ? '↗' : '↘',
           meta_trend: wow > 5 ? 'up' : (wow < -5 ? 'down' : 'flat')
+        },
+        {
+          label: 'Total messages',
+          value: totalMessages.toLocaleString(),
+          unit: '', color: 'default',
+          meta: `user + agent · ${totalSessions.toLocaleString()} sessions`,
+          meta_arrow: '', meta_trend: 'flat'
         },
         {
           label: 'Avg latency',
@@ -958,6 +1100,14 @@
         card_title: `Failed product searches by brand · ${brandTotal} total`,
         card_meta: `Top 10 · ${win.dateList.length}d`,
         items: Object.entries(brandCounts).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([name, value]) => ({ name, value }))
+      },
+      lost_demand: {
+        kpis: lostDemandKpis,
+        category: {
+          card_title: 'By sport / category · where intent lives',
+          card_meta: `${totalFailedProduct.toLocaleString()} failed queries · ${win.dateList.length}d`,
+          items: categorySorted.map(([name, value]) => ({ name, value }))
+        }
       },
       recommendations: {
         section_desc: CONFIG.DESCRIPTIONS.recommendations,
@@ -1315,6 +1465,58 @@
     });
   }
 
+  function renderLostDemand(ld) {
+    // ---- KPI strip
+    const strip = document.getElementById('ldKpiStrip');
+    strip.innerHTML = '';
+    (ld.kpis || []).forEach(k => {
+      const colorClass = ['red','amber','cyan','mint'].includes(k.color) ? k.color : '';
+      const suffix = k.valueSuffix || '';
+      const card = document.createElement('div');
+      card.className = 'ld-kpi';
+      card.innerHTML = `
+        <div class="lbl">${escapeHtml(k.label)}</div>
+        <div class="val ${colorClass}">${escapeHtml(String(k.value))}${suffix}</div>
+        <div class="sub">${escapeHtml(k.sub || '')}</div>
+      `;
+      strip.appendChild(card);
+    });
+
+    // ---- Category chart (horizontal bars)
+    const cat = ld.category || { items: [] };
+    document.getElementById('categoryCardTitle').textContent = cat.card_title || '';
+    document.getElementById('categoryCardMeta').textContent = cat.card_meta || '';
+    const items = cat.items || [];
+    charts.category = new Chart(document.getElementById('categoryChart'), {
+      type: 'bar',
+      data: {
+        labels: items.map(i => i.name),
+        datasets: [{
+          data: items.map(i => i.value),
+          backgroundColor: (ctx) => {
+            const v = ctx.parsed?.x ?? 0;
+            if (v >= 100) return C.red;
+            if (v >= 25)  return C.amber;
+            return 'rgba(56, 189, 248, 0.6)';
+          },
+          borderRadius: 3, barPercentage: 0.75
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { backgroundColor: '#08090C', titleColor: C.text1, bodyColor: C.text2, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, callbacks: { label: ctx => ctx.parsed.x + ' failed queries' } }
+        },
+        scales: {
+          x: { beginAtZero: true, ticks: { color: C.text3, font: { size: 9 } }, grid: { color: C.grid } },
+          y: { grid: { display: false }, ticks: { color: C.text2, font: { size: 10 } } }
+        }
+      }
+    });
+  }
+
   function renderRecs(recs) {
     document.getElementById('recsDesc').textContent = recs.section_desc || '';
     const grid = document.getElementById('recsGrid');
@@ -1348,6 +1550,7 @@
     if (charts.latency) charts.latency.destroy();
     if (charts.promo) charts.promo.destroy();
     if (charts.brand) charts.brand.destroy();
+    if (charts.category) charts.category.destroy();
     if (Array.isArray(charts.tools)) charts.tools.forEach(c => c && c.destroy());
     charts = {};
   }
@@ -1373,6 +1576,7 @@
     renderIncident(data.incident || {}, data.daily || {});
     renderLanguages(data.languages || {});
     renderBrands(data.brands || {});
+    renderLostDemand(data.lost_demand || {});
     renderRecs(data.recommendations || {});
     updateLastUpdated();
   }
