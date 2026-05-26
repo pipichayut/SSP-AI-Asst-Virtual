@@ -242,9 +242,9 @@
       <div class="brand-text">AI ASSISTANT · <span>EXECUTIVE BRIEF</span></div>
     </div>
     <div class="topbar-meta">
-      <div>WINDOW<strong id="metaWindow">—</strong></div>
-      <div>RANGE<strong id="metaRange">—</strong></div>
-      <div>TZ<strong id="metaTz">—</strong></div>
+      <div>WINDOW<strong id="metaWindow">32D · FULL</strong></div>
+      <div>RANGE<strong id="metaRange">16 APR → 17 MAY 2026</strong></div>
+      <div>TZ<strong id="metaTz">BKK</strong></div>
       <div class="refresh-wrap">
         <span class="updated-text" id="lastUpdated">—</span>
         <button class="refresh-btn" id="refreshBtn" title="Refresh data" aria-label="Refresh data"><span class="icon">↻</span></button>
@@ -256,26 +256,53 @@
   <div class="err-banner" id="errBanner"></div>
 
   <!-- ========== STATUS BANNER ========== -->
-  <div class="status-banner hidden" id="statusBanner">
+  <div class="status-banner" id="statusBanner">
     <div class="status-icon" id="statusIcon">!</div>
-    <div class="status-text" id="statusText"></div>
-    <div class="status-meta" id="statusMeta"></div>
+    <div class="status-text" id="statusText"><strong>TOP PRIORITY</strong> · faq_helpdesk now leading fail source: 5,181 queries at 43% unresolved · 2,229 unanswered over 32d</div>
+    <div class="status-meta" id="statusMeta">P0 · KNOWLEDGE OPS</div>
   </div>
 
   <!-- ========== HERO KPIs ========== -->
-  <div class="hero-kpis" id="kpiGrid"></div>
+  <!-- Static V4 baseline content; JS overwrites when live data loads -->
+  <div class="hero-kpis" id="kpiGrid">
+    <div class="kpi-card">
+      <div class="kpi-label">Total traces</div>
+      <div class="kpi-value">17,936</div>
+      <div class="kpi-meta down"><span class="arrow">↘</span>−31% week-over-week</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Total messages</div>
+      <div class="kpi-value">35,836</div>
+      <div class="kpi-meta"><span style="color:var(--text-3);">user + agent · 5,735 sessions</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Avg latency</div>
+      <div class="kpi-value mint">7.5<sup>s</sup></div>
+      <div class="kpi-meta up">93% under 15s</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Unresolved rate</div>
+      <div class="kpi-value red">34<sup>%</sup></div>
+      <div class="kpi-meta flat">flat across window</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">TH ↔ EN gap</div>
+      <div class="kpi-value amber">+18<sup>pt</sup></div>
+      <div class="kpi-meta flat">39% TH · 22% EN fail</div>
+    </div>
+  </div>
 
   <!-- ========== SEC 01 — LATENCY ========== -->
   <section class="sec">
     <div class="sec-head">
       <div class="sec-num">01</div>
-      <h2 class="sec-title" id="latencyTitle">Average latency</h2>
-      <div class="sec-desc" id="latencyDesc">—</div>
+      <h2 class="sec-title" id="latencyTitle">Average latency · 32 days</h2>
+      <div class="sec-desc" id="latencyDesc">Daily avg response time · target ≤ 8s</div>
     </div>
     <div class="card">
       <div class="card-head">
-        <div class="card-title" id="latencyCardTitle">—</div>
-        <div class="card-meta" id="latencyCardMeta">—</div>
+        <div class="card-title" id="latencyCardTitle">Avg latency by day (seconds) · target line at 8s</div>
+        <div class="card-meta" id="latencyCardMeta">32d · BKK</div>
       </div>
       <div class="chart-wrap" style="height: 240px;">
         <canvas id="latencyChart" role="img" aria-label="Average latency per day"></canvas>
@@ -288,12 +315,12 @@
     <div class="sec-head">
       <div class="sec-num">02</div>
       <h2 class="sec-title">Daily volume × quality</h2>
-      <div class="sec-desc" id="dailyDesc">—</div>
+      <div class="sec-desc" id="dailyDesc">Traffic peaked early May · declining since · resolution flat</div>
     </div>
     <div class="card">
       <div class="card-head">
-        <div class="card-title" id="dailyCardTitle">—</div>
-        <div class="card-meta" id="dailyCardMeta">—</div>
+        <div class="card-title" id="dailyCardTitle">Traces (bars) · unresolved % (line)</div>
+        <div class="card-meta" id="dailyCardMeta">32d</div>
       </div>
       <div class="chart-wrap" style="height: 240px;">
         <canvas id="dailyChart" role="img" aria-label="Daily traces and unresolved rate"></canvas>
@@ -306,7 +333,7 @@
     <div class="sec-head">
       <div class="sec-num">03</div>
       <h2 class="sec-title">Tool-level health</h2>
-      <div class="sec-desc" id="toolsDesc">—</div>
+      <div class="sec-desc" id="toolsDesc">8 tools · 1 critical · 1 recovered · 2 healthy</div>
     </div>
     <div class="tool-grid" id="toolGrid"></div>
   </section>
@@ -316,14 +343,19 @@
     <div class="sec-head">
       <div class="sec-num">04</div>
       <h2 class="sec-title">Critical patterns</h2>
-      <div class="sec-desc" id="incidentDesc">—</div>
+      <div class="sec-desc" id="incidentDesc">Resolved promo outage + structural language gap</div>
     </div>
     <div class="row-2">
 
-      <div class="incident-card none" id="incidentCard">
-        <div class="incident-tag none" id="incidentTag">—</div>
-        <h3 class="incident-title none" id="incidentTitle">—</h3>
-        <div class="incident-stats" id="incidentStats"></div>
+      <div class="incident-card resolved" id="incidentCard">
+        <div class="incident-tag resolved" id="incidentTag">Resolved incident</div>
+        <h3 class="incident-title resolved" id="incidentTitle">Promo tool <em>broke Apr 23 · recovered Apr 29</em></h3>
+        <div class="incident-stats" id="incidentStats">
+          <div class="incident-stat"><div class="lbl">Pre-incident</div><div class="val">10<span style="font-size:18px;">%</span></div></div>
+          <div class="incident-stat"><div class="lbl">During (6d)</div><div class="val red">58<span style="font-size:18px;">%</span></div></div>
+          <div class="incident-stat"><div class="lbl">Post-Apr 29</div><div class="val mint">17<span style="font-size:18px;">%</span></div></div>
+          <div class="incident-stat"><div class="lbl">Lost queries</div><div class="val red">~205</div></div>
+        </div>
         <div class="chart-wrap" style="height: 180px; margin-top: 6px;">
           <canvas id="promoChart" role="img" aria-label="Incident failure rate timeline"></canvas>
         </div>
@@ -331,8 +363,8 @@
 
       <div class="lang-card">
         <div class="card-head">
-          <div class="card-title" id="langCardTitle">—</div>
-          <div class="card-meta" id="langCardMeta">—</div>
+          <div class="card-title" id="langCardTitle">Language gap by tool · fail %</div>
+          <div class="card-meta" id="langCardMeta">EN · TH</div>
         </div>
         <div class="lang-bars" id="langBars"></div>
       </div>
@@ -345,18 +377,40 @@
     <div class="sec-head">
       <div class="sec-num">05</div>
       <h2 class="sec-title">Lost demand</h2>
-      <div class="sec-desc" id="brandsDesc">—</div>
+      <div class="sec-desc" id="brandsDesc">Buyer intent the catalog missed · forward to merchandising</div>
     </div>
 
     <!-- KPI strip -->
-    <div class="ld-kpi-strip" id="ldKpiStrip"></div>
+    <!-- Static V4 baseline content; JS overwrites when live data loads -->
+    <div class="ld-kpi-strip" id="ldKpiStrip">
+      <div class="ld-kpi">
+        <div class="lbl">Failed product queries</div>
+        <div class="val red">613</div>
+        <div class="sub">stock_check + product_rec · 32d</div>
+      </div>
+      <div class="ld-kpi">
+        <div class="lbl">Sessions impacted</div>
+        <div class="val amber">477</div>
+        <div class="sub">8.3% of 5,735 sessions hit a wall</div>
+      </div>
+      <div class="ld-kpi">
+        <div class="lbl">Language split</div>
+        <div class="val">67<span class="small">%</span> <span class="lbl-inline">TH</span></div>
+        <div class="sub">410 TH · 201 EN · TH-heavy gap</div>
+      </div>
+      <div class="ld-kpi">
+        <div class="lbl">Daily volume</div>
+        <div class="val cyan">~20<span class="small">/d</span></div>
+        <div class="sub">stable · peak 45 · floor 8</div>
+      </div>
+    </div>
 
     <!-- Brand chart + category chart side-by-side -->
     <div class="ld-grid">
       <div class="card">
         <div class="card-head">
-          <div class="card-title" id="brandsCardTitle">—</div>
-          <div class="card-meta" id="brandsCardMeta">—</div>
+          <div class="card-title" id="brandsCardTitle">By brand · top 10 of 636 failed</div>
+          <div class="card-meta" id="brandsCardMeta">Merch action: catalog gap</div>
         </div>
         <div class="chart-wrap" style="height: 240px;">
           <canvas id="brandChart" role="img" aria-label="Failed product searches by brand"></canvas>
@@ -365,7 +419,7 @@
       <div class="card">
         <div class="card-head">
           <div class="card-title" id="categoryCardTitle">By sport / category · where intent lives</div>
-          <div class="card-meta" id="categoryCardMeta">—</div>
+          <div class="card-meta" id="categoryCardMeta">% of categorisable queries</div>
         </div>
         <div class="chart-wrap" style="height: 240px;">
           <canvas id="categoryChart" role="img" aria-label="Failed product searches by category"></canvas>
@@ -379,15 +433,61 @@
     <div class="sec-head">
       <div class="sec-num">06</div>
       <h2 class="sec-title">Action queue</h2>
-      <div class="sec-desc" id="recsDesc">—</div>
+      <div class="sec-desc" id="recsDesc">Ranked by ROI · reprioritized for 32d view</div>
     </div>
-    <div class="recs" id="recsGrid"></div>
+    <div class="recs" id="recsGrid">
+      <div class="rec-card">
+        <div class="rec-num">1</div>
+        <div class="rec-tier p0">P0 · This sprint</div>
+        <h4>FAQ content audit · top 50 failing queries</h4>
+        <div class="rec-stats">
+          <span class="rec-tag">Effort <strong>M</strong></span>
+          <span class="rec-tag">Impact <strong>Very high</strong></span>
+        </div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-num">2</div>
+        <div class="rec-tier p0">P0 · This sprint</div>
+        <h4>Thai order_status fix · 61% TH vs 13% EN</h4>
+        <div class="rec-stats">
+          <span class="rec-tag">Effort <strong>M</strong></span>
+          <span class="rec-tag">Impact <strong>High</strong></span>
+        </div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-num">3</div>
+        <div class="rec-tier p1">P1 · 30d</div>
+        <h4>Volume decline diagnosis · −31% WoW</h4>
+        <div class="rec-stats">
+          <span class="rec-tag">Effort <strong>S</strong></span>
+          <span class="rec-tag">Impact <strong>Diagnostic</strong></span>
+        </div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-num">4</div>
+        <div class="rec-tier p1">P1 · 60d</div>
+        <h4>Lost-demand digest to merchandising</h4>
+        <div class="rec-stats">
+          <span class="rec-tag">Effort <strong>S</strong></span>
+          <span class="rec-tag">Impact <strong>Med-high</strong></span>
+        </div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-num">5</div>
+        <div class="rec-tier p2">P2 · Always-on</div>
+        <h4>Tool-fail alerting · promo took 6d to surface</h4>
+        <div class="rec-stats">
+          <span class="rec-tag">Effort <strong>S</strong></span>
+          <span class="rec-tag">Impact <strong>Compounding</strong></span>
+        </div>
+      </div>
+    </div>
   </section>
 
   <footer>
-    <span id="footerSource">—</span>
-    <span id="footerRange">—</span>
-    <span id="footerLabel">—</span>
+    <span id="footerSource">SOURCE · TRACE_REPORT_COMBINED.XLSX · 17,936 ROWS</span>
+    <span id="footerRange">BKK 2026-04-16 → 2026-05-17 · 32D</span>
+    <span id="footerLabel">EXECUTIVE BRIEF V3</span>
   </footer>
 
 </div>
