@@ -868,9 +868,38 @@
     const last7Start = new Date(endD); last7Start.setUTCDate(endD.getUTCDate() - 6);
     const prev7End = new Date(last7Start); prev7End.setUTCDate(last7Start.getUTCDate() - 1);
     const prev7Start = new Date(prev7End); prev7Start.setUTCDate(prev7End.getUTCDate() - 6);
-    const last7 = inWin.filter(r => r._ts >= last7Start && r._ts <= new Date(endD.getTime() + 86399999)).length;
-    const prev7 = inWin.filter(r => r._ts >= prev7Start && r._ts <= new Date(prev7End.getTime() + 86399999)).length;
+    const last7End = new Date(endD.getTime() + 86399999);
+    const prev7EndInc = new Date(prev7End.getTime() + 86399999);
+    const inLast7 = r => r._ts >= last7Start && r._ts <= last7End;
+    const inPrev7 = r => r._ts >= prev7Start && r._ts <= prev7EndInc;
+    const last7 = inWin.filter(inLast7).length;
+    const prev7 = inWin.filter(inPrev7).length;
     const wow = prev7 ? Math.round((last7 - prev7) / prev7 * 100) : 0;
+
+    // Week-over-week distinct sessions (Total Trace KPI)
+    const last7SessionSet = new Set();
+    const prev7SessionSet = new Set();
+    inWin.forEach(r => {
+      const sid = String((r._raw && r._raw['Session ID']) || '').trim();
+      if (!sid) return;
+      if (inLast7(r)) last7SessionSet.add(sid);
+      if (inPrev7(r)) prev7SessionSet.add(sid);
+    });
+    const wowSessions = prev7SessionSet.size
+      ? Math.round((last7SessionSet.size - prev7SessionSet.size) / prev7SessionSet.size * 100)
+      : 0;
+
+    // Week-over-week messages (user + agent) for the Total Messages KPI
+    let last7Msgs = 0, prev7Msgs = 0;
+    inWin.forEach(r => {
+      const hasUser  = String(r._question || '').trim() !== '';
+      const hasAgent = String((r._raw && r._raw['Agent Response']) || '').trim() !== '';
+      const m = (hasUser ? 1 : 0) + (hasAgent ? 1 : 0);
+      if (!m) return;
+      if (inLast7(r)) last7Msgs += m;
+      if (inPrev7(r)) prev7Msgs += m;
+    });
+    const wowMessages = prev7Msgs ? Math.round((last7Msgs - prev7Msgs) / prev7Msgs * 100) : 0;
 
     // Build tool list
     const incidentTool = CONFIG.INCIDENT.enabled ? CONFIG.INCIDENT.tool : null;
@@ -1227,15 +1256,17 @@
           label: 'Total Trace',
           value: totalSessions.toLocaleString(),
           unit: '', color: 'default',
-          meta: 'count distinct Session ID',
-          meta_arrow: '', meta_trend: 'flat'
+          meta: wowSessions >= 0 ? `+${wowSessions}% week-over-week` : `${wowSessions}% week-over-week`,
+          meta_arrow: wowSessions >= 0 ? '↗' : '↘',
+          meta_trend: wowSessions > 5 ? 'up' : (wowSessions < -5 ? 'down' : 'flat')
         },
         {
           label: 'Total messages',
           value: totalMessages.toLocaleString(),
           unit: '', color: 'default',
-          meta: `user + agent · ${totalSessions.toLocaleString()} sessions`,
-          meta_arrow: '', meta_trend: 'flat'
+          meta: wowMessages >= 0 ? `+${wowMessages}% week-over-week` : `${wowMessages}% week-over-week`,
+          meta_arrow: wowMessages >= 0 ? '↗' : '↘',
+          meta_trend: wowMessages > 5 ? 'up' : (wowMessages < -5 ? 'down' : 'flat')
         },
         {
           label: 'Avg latency',
