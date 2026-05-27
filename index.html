@@ -83,14 +83,15 @@
   .err-banner.show { display: block; }
 
   /* ========== HERO KPIs ========== */
-  .hero-kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 32px; }
+  .hero-kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 32px; }
   .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 22px 22px; }
   .kpi-card .kpi-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-3); margin-bottom: 14px; }
-  .kpi-card .kpi-value { font-family: var(--display); font-size: 56px; line-height: 0.95; letter-spacing: 0.01em; }
+  .kpi-card .kpi-value { font-family: var(--display); font-size: 48px; line-height: 0.95; letter-spacing: 0.01em; }
   .kpi-card .kpi-value sup { font-size: 26px; opacity: 0.6; vertical-align: top; margin-left: 2px; }
   .kpi-card .kpi-value.red { color: var(--red); }
   .kpi-card .kpi-value.mint { color: var(--mint); }
   .kpi-card .kpi-value.amber { color: var(--amber); }
+  .kpi-card .kpi-value.cyan { color: var(--cyan); }
   .kpi-card .kpi-meta { font-family: var(--mono); font-size: 11px; color: var(--text-2); margin-top: 12px; display: flex; align-items: center; gap: 6px; }
   .kpi-card .kpi-meta .arrow { font-family: sans-serif; }
   .kpi-card .kpi-meta.up { color: var(--mint); }
@@ -210,6 +211,25 @@
   .ld-kpi .sub { font-family: var(--mono); font-size: 10px; color: var(--text-2); margin-top: 6px; }
   .ld-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
+  /* ========== MISSING ITEMS LIST ========== */
+  .missing-items { display: flex; flex-direction: column; }
+  .missing-row { display: grid; grid-template-columns: 28px 1fr 110px 130px 70px 70px; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .missing-row:last-child { border-bottom: none; }
+  .missing-row:hover { background: rgba(255,255,255,0.015); }
+  .missing-rank { font-family: var(--mono); font-size: 11px; color: var(--text-3); }
+  .missing-name { font-family: var(--sans); font-size: 13px; color: var(--text-1); font-weight: 500; }
+  .missing-name .nm-sub { display: block; font-family: var(--mono); font-size: 10px; color: var(--text-3); margin-top: 2px; font-weight: 400; }
+  .missing-brand { font-family: var(--mono); font-size: 10px; color: var(--text-2); letter-spacing: 0.05em; text-transform: uppercase; }
+  .missing-cat { font-family: var(--mono); font-size: 10px; color: var(--text-3); letter-spacing: 0.04em; }
+  .missing-lang { font-family: var(--mono); font-size: 9px; padding: 3px 7px; border-radius: 3px; letter-spacing: 0.06em; text-align: center; font-weight: 500; }
+  .missing-lang.th { background: rgba(255, 84, 112, 0.12); color: var(--red); }
+  .missing-lang.en { background: rgba(56, 189, 248, 0.12); color: var(--cyan); }
+  .missing-lang.mixed { background: rgba(251, 191, 36, 0.12); color: var(--amber); }
+  .missing-count { font-family: var(--display); font-size: 22px; color: var(--red); text-align: right; letter-spacing: 0.02em; }
+  .missing-head { display: grid; grid-template-columns: 28px 1fr 110px 130px 70px 70px; gap: 14px; padding: 0 0 10px; border-bottom: 1px solid var(--border-2); margin-bottom: 4px; }
+  .missing-head div { font-family: var(--mono); font-size: 9px; color: var(--text-3); letter-spacing: 0.12em; text-transform: uppercase; }
+  .missing-head .h-count { text-align: right; }
+
   /* ========== RESPONSIVE ========== */
   @media (max-width: 1100px) {
     .page { padding: 24px 20px; }
@@ -242,9 +262,9 @@
       <div class="brand-text">AI ASSISTANT · <span>EXECUTIVE BRIEF</span></div>
     </div>
     <div class="topbar-meta">
-      <div>WINDOW<strong id="metaWindow">32D · FULL</strong></div>
-      <div>RANGE<strong id="metaRange">16 APR → 17 MAY 2026</strong></div>
-      <div>TZ<strong id="metaTz">BKK</strong></div>
+      <div>WINDOW<strong id="metaWindow">—</strong></div>
+      <div>RANGE<strong id="metaRange">—</strong></div>
+      <div>TZ<strong id="metaTz">—</strong></div>
       <div class="refresh-wrap">
         <span class="updated-text" id="lastUpdated">—</span>
         <button class="refresh-btn" id="refreshBtn" title="Refresh data" aria-label="Refresh data"><span class="icon">↻</span></button>
@@ -256,53 +276,26 @@
   <div class="err-banner" id="errBanner"></div>
 
   <!-- ========== STATUS BANNER ========== -->
-  <div class="status-banner" id="statusBanner">
+  <div class="status-banner hidden" id="statusBanner">
     <div class="status-icon" id="statusIcon">!</div>
-    <div class="status-text" id="statusText"><strong>TOP PRIORITY</strong> · faq_helpdesk now leading fail source: 5,181 queries at 43% unresolved · 2,229 unanswered over 32d</div>
-    <div class="status-meta" id="statusMeta">P0 · KNOWLEDGE OPS</div>
+    <div class="status-text" id="statusText"></div>
+    <div class="status-meta" id="statusMeta"></div>
   </div>
 
   <!-- ========== HERO KPIs ========== -->
-  <!-- Static V4 baseline content; JS overwrites when live data loads -->
-  <div class="hero-kpis" id="kpiGrid">
-    <div class="kpi-card">
-      <div class="kpi-label">Total traces</div>
-      <div class="kpi-value">17,936</div>
-      <div class="kpi-meta down"><span class="arrow">↘</span>−31% week-over-week</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Total messages</div>
-      <div class="kpi-value">35,836</div>
-      <div class="kpi-meta"><span style="color:var(--text-3);">user + agent · 5,735 sessions</span></div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Avg latency</div>
-      <div class="kpi-value mint">7.5<sup>s</sup></div>
-      <div class="kpi-meta up">93% under 15s</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Unresolved rate</div>
-      <div class="kpi-value red">34<sup>%</sup></div>
-      <div class="kpi-meta flat">flat across window</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">TH ↔ EN gap</div>
-      <div class="kpi-value amber">+18<sup>pt</sup></div>
-      <div class="kpi-meta flat">39% TH · 22% EN fail</div>
-    </div>
-  </div>
+  <div class="hero-kpis" id="kpiGrid"></div>
 
   <!-- ========== SEC 01 — LATENCY ========== -->
   <section class="sec">
     <div class="sec-head">
       <div class="sec-num">01</div>
-      <h2 class="sec-title" id="latencyTitle">Average latency · 32 days</h2>
-      <div class="sec-desc" id="latencyDesc">Daily avg response time · target ≤ 8s</div>
+      <h2 class="sec-title" id="latencyTitle">Average latency</h2>
+      <div class="sec-desc" id="latencyDesc">—</div>
     </div>
     <div class="card">
       <div class="card-head">
-        <div class="card-title" id="latencyCardTitle">Avg latency by day (seconds) · target line at 8s</div>
-        <div class="card-meta" id="latencyCardMeta">32d · BKK</div>
+        <div class="card-title" id="latencyCardTitle">—</div>
+        <div class="card-meta" id="latencyCardMeta">—</div>
       </div>
       <div class="chart-wrap" style="height: 240px;">
         <canvas id="latencyChart" role="img" aria-label="Average latency per day"></canvas>
@@ -315,12 +308,12 @@
     <div class="sec-head">
       <div class="sec-num">02</div>
       <h2 class="sec-title">Daily volume × quality</h2>
-      <div class="sec-desc" id="dailyDesc">Traffic peaked early May · declining since · resolution flat</div>
+      <div class="sec-desc" id="dailyDesc">—</div>
     </div>
     <div class="card">
       <div class="card-head">
-        <div class="card-title" id="dailyCardTitle">Traces (bars) · unresolved % (line)</div>
-        <div class="card-meta" id="dailyCardMeta">32d</div>
+        <div class="card-title" id="dailyCardTitle">—</div>
+        <div class="card-meta" id="dailyCardMeta">—</div>
       </div>
       <div class="chart-wrap" style="height: 240px;">
         <canvas id="dailyChart" role="img" aria-label="Daily traces and unresolved rate"></canvas>
@@ -333,7 +326,7 @@
     <div class="sec-head">
       <div class="sec-num">03</div>
       <h2 class="sec-title">Tool-level health</h2>
-      <div class="sec-desc" id="toolsDesc">8 tools · 1 critical · 1 recovered · 2 healthy</div>
+      <div class="sec-desc" id="toolsDesc">—</div>
     </div>
     <div class="tool-grid" id="toolGrid"></div>
   </section>
@@ -343,19 +336,14 @@
     <div class="sec-head">
       <div class="sec-num">04</div>
       <h2 class="sec-title">Critical patterns</h2>
-      <div class="sec-desc" id="incidentDesc">Resolved promo outage + structural language gap</div>
+      <div class="sec-desc" id="incidentDesc">—</div>
     </div>
     <div class="row-2">
 
-      <div class="incident-card resolved" id="incidentCard">
-        <div class="incident-tag resolved" id="incidentTag">Resolved incident</div>
-        <h3 class="incident-title resolved" id="incidentTitle">Promo tool <em>broke Apr 23 · recovered Apr 29</em></h3>
-        <div class="incident-stats" id="incidentStats">
-          <div class="incident-stat"><div class="lbl">Pre-incident</div><div class="val">10<span style="font-size:18px;">%</span></div></div>
-          <div class="incident-stat"><div class="lbl">During (6d)</div><div class="val red">58<span style="font-size:18px;">%</span></div></div>
-          <div class="incident-stat"><div class="lbl">Post-Apr 29</div><div class="val mint">17<span style="font-size:18px;">%</span></div></div>
-          <div class="incident-stat"><div class="lbl">Lost queries</div><div class="val red">~205</div></div>
-        </div>
+      <div class="incident-card none" id="incidentCard">
+        <div class="incident-tag none" id="incidentTag">—</div>
+        <h3 class="incident-title none" id="incidentTitle">—</h3>
+        <div class="incident-stats" id="incidentStats"></div>
         <div class="chart-wrap" style="height: 180px; margin-top: 6px;">
           <canvas id="promoChart" role="img" aria-label="Incident failure rate timeline"></canvas>
         </div>
@@ -363,8 +351,8 @@
 
       <div class="lang-card">
         <div class="card-head">
-          <div class="card-title" id="langCardTitle">Language gap by tool · fail %</div>
-          <div class="card-meta" id="langCardMeta">EN · TH</div>
+          <div class="card-title" id="langCardTitle">—</div>
+          <div class="card-meta" id="langCardMeta">—</div>
         </div>
         <div class="lang-bars" id="langBars"></div>
       </div>
@@ -377,40 +365,18 @@
     <div class="sec-head">
       <div class="sec-num">05</div>
       <h2 class="sec-title">Lost demand</h2>
-      <div class="sec-desc" id="brandsDesc">Buyer intent the catalog missed · forward to merchandising</div>
+      <div class="sec-desc" id="brandsDesc">—</div>
     </div>
 
     <!-- KPI strip -->
-    <!-- Static V4 baseline content; JS overwrites when live data loads -->
-    <div class="ld-kpi-strip" id="ldKpiStrip">
-      <div class="ld-kpi">
-        <div class="lbl">Failed product queries</div>
-        <div class="val red">613</div>
-        <div class="sub">stock_check + product_rec · 32d</div>
-      </div>
-      <div class="ld-kpi">
-        <div class="lbl">Sessions impacted</div>
-        <div class="val amber">477</div>
-        <div class="sub">8.3% of 5,735 sessions hit a wall</div>
-      </div>
-      <div class="ld-kpi">
-        <div class="lbl">Language split</div>
-        <div class="val">67<span class="small">%</span> <span class="lbl-inline">TH</span></div>
-        <div class="sub">410 TH · 201 EN · TH-heavy gap</div>
-      </div>
-      <div class="ld-kpi">
-        <div class="lbl">Daily volume</div>
-        <div class="val cyan">~20<span class="small">/d</span></div>
-        <div class="sub">stable · peak 45 · floor 8</div>
-      </div>
-    </div>
+    <div class="ld-kpi-strip" id="ldKpiStrip"></div>
 
     <!-- Brand chart + category chart side-by-side -->
     <div class="ld-grid">
       <div class="card">
         <div class="card-head">
-          <div class="card-title" id="brandsCardTitle">By brand · top 10 of 636 failed</div>
-          <div class="card-meta" id="brandsCardMeta">Merch action: catalog gap</div>
+          <div class="card-title" id="brandsCardTitle">—</div>
+          <div class="card-meta" id="brandsCardMeta">—</div>
         </div>
         <div class="chart-wrap" style="height: 240px;">
           <canvas id="brandChart" role="img" aria-label="Failed product searches by brand"></canvas>
@@ -419,12 +385,29 @@
       <div class="card">
         <div class="card-head">
           <div class="card-title" id="categoryCardTitle">By sport / category · where intent lives</div>
-          <div class="card-meta" id="categoryCardMeta">% of categorisable queries</div>
+          <div class="card-meta" id="categoryCardMeta">—</div>
         </div>
         <div class="chart-wrap" style="height: 240px;">
           <canvas id="categoryChart" role="img" aria-label="Failed product searches by category"></canvas>
         </div>
       </div>
+    </div>
+
+    <!-- Top missing items list -->
+    <div class="card" style="margin-top: 12px;">
+      <div class="card-head">
+        <div class="card-title" id="missingCardTitle">Top missing items · products customers asked for but not in Supersports catalog</div>
+        <div class="card-meta" id="missingCardMeta">—</div>
+      </div>
+      <div class="missing-head">
+        <div>#</div>
+        <div>Product</div>
+        <div>Brand</div>
+        <div>Category</div>
+        <div>Lang</div>
+        <div class="h-count">Asks</div>
+      </div>
+      <div class="missing-items" id="missingItems"></div>
     </div>
   </section>
 
@@ -433,61 +416,15 @@
     <div class="sec-head">
       <div class="sec-num">06</div>
       <h2 class="sec-title">Action queue</h2>
-      <div class="sec-desc" id="recsDesc">Ranked by ROI · reprioritized for 32d view</div>
+      <div class="sec-desc" id="recsDesc">—</div>
     </div>
-    <div class="recs" id="recsGrid">
-      <div class="rec-card">
-        <div class="rec-num">1</div>
-        <div class="rec-tier p0">P0 · This sprint</div>
-        <h4>FAQ content audit · top 50 failing queries</h4>
-        <div class="rec-stats">
-          <span class="rec-tag">Effort <strong>M</strong></span>
-          <span class="rec-tag">Impact <strong>Very high</strong></span>
-        </div>
-      </div>
-      <div class="rec-card">
-        <div class="rec-num">2</div>
-        <div class="rec-tier p0">P0 · This sprint</div>
-        <h4>Thai order_status fix · 61% TH vs 13% EN</h4>
-        <div class="rec-stats">
-          <span class="rec-tag">Effort <strong>M</strong></span>
-          <span class="rec-tag">Impact <strong>High</strong></span>
-        </div>
-      </div>
-      <div class="rec-card">
-        <div class="rec-num">3</div>
-        <div class="rec-tier p1">P1 · 30d</div>
-        <h4>Volume decline diagnosis · −31% WoW</h4>
-        <div class="rec-stats">
-          <span class="rec-tag">Effort <strong>S</strong></span>
-          <span class="rec-tag">Impact <strong>Diagnostic</strong></span>
-        </div>
-      </div>
-      <div class="rec-card">
-        <div class="rec-num">4</div>
-        <div class="rec-tier p1">P1 · 60d</div>
-        <h4>Lost-demand digest to merchandising</h4>
-        <div class="rec-stats">
-          <span class="rec-tag">Effort <strong>S</strong></span>
-          <span class="rec-tag">Impact <strong>Med-high</strong></span>
-        </div>
-      </div>
-      <div class="rec-card">
-        <div class="rec-num">5</div>
-        <div class="rec-tier p2">P2 · Always-on</div>
-        <h4>Tool-fail alerting · promo took 6d to surface</h4>
-        <div class="rec-stats">
-          <span class="rec-tag">Effort <strong>S</strong></span>
-          <span class="rec-tag">Impact <strong>Compounding</strong></span>
-        </div>
-      </div>
-    </div>
+    <div class="recs" id="recsGrid"></div>
   </section>
 
   <footer>
-    <span id="footerSource">SOURCE · TRACE_REPORT_COMBINED.XLSX · 17,936 ROWS</span>
-    <span id="footerRange">BKK 2026-04-16 → 2026-05-17 · 32D</span>
-    <span id="footerLabel">EXECUTIVE BRIEF V3</span>
+    <span id="footerSource">—</span>
+    <span id="footerRange">—</span>
+    <span id="footerLabel">—</span>
   </footer>
 
 </div>
@@ -1045,6 +982,159 @@
       .filter(([,v]) => v > 0)
       .sort((a,b) => b[1] - a[1]);
 
+    // ============================================================
+    // TOP MISSING ITEMS — cluster failed product queries by brand + model token
+    // ============================================================
+    const STOP_PATTERNS = [
+      'รองเท้า','เสื้อ','กางเกง','กระเป๋า','รุ่น','แบรนด์','ไม้แบด','ไม้เเบด',
+      '\\bbrand\\b','\\bสี\\b','\\bsize\\b','ไซส์','ไซล์','ไซน์','เบอร์',
+      'ผู้ชาย','ผู้หญิง','เด็ก','\\bชาย\\b','\\bหญิง\\b',
+      '\\bmen\\b','\\bmens\\b','\\bwomen\\b','\\bwomens\\b','\\bman\\b','\\bwoman\\b',
+      '\\bkids?\\b','\\bmale\\b','\\bfemale\\b','\\bunisex\\b',
+      'ราคา','ไม่เกิน','บาท','\\bthb\\b','\\bbaht\\b',
+      'มีไหม','มั้ย','ขอ','\\bมี\\b','\\bไหม\\b','\\bคะ\\b','\\bค่ะ\\b','\\bครับ\\b',
+      '\\bplease\\b','do\\s+you\\s+have','\\bavailable\\b','\\bstock\\b',
+      '\\bneed\\b','\\bwant\\b','looking\\s+for',
+      '\\bthe\\b','\\ba\\b','\\ban\\b','\\bfor\\b','\\bof\\b','\\bwith\\b',
+      '\\bin\\b','\\bat\\b','\\bon\\b','\\bto\\b','\\bby\\b',
+      '\\bis\\b','\\bare\\b','\\bwas\\b','\\bwere\\b',
+      '\\bhas\\b','\\bhave\\b','\\bhad\\b',
+      '\\bwill\\b','\\bcan\\b','\\bcould\\b','\\bshould\\b',
+      '\\bthat\\b','\\bthis\\b','\\bcolor\\b','\\bcolour\\b',
+      '\\bshoes?\\b','\\bshoe\\b','\\brestock\\b','\\bdate\\b',
+      '\\bdiscontinued\\b','\\bbeing\\b',
+      'ราคาไม่เกิน','ยังมี','ขายไหม','ขายอยู่','ขาย',
+      'นิ่ม','สำหรับ','\\bใช้\\b','\\bที่\\b','มีขาย','\\bอยู่\\b','หน้าเท้า','กว้าง',
+      'ดำล้วน','\\bดำ\\b','\\bขาว\\b','\\bแดง\\b','น้ำเงิน','เขียว','เหลือง',
+      'ใหญ่','\\bเล็ก\\b','พื้นยาง','พื้น','\\bใส่\\b','ยืนนาน','หลายชั่วโมง','\\bของ\\b',
+      'ความกว้าง'
+    ];
+    const STOP_RE = new RegExp(STOP_PATTERNS.join('|'), 'gi');
+    const PRICE_RE = /\d{1,3}(?:[\,\.]?\d{3})*\s*(?:บาท|baht|thb|฿)/gi;
+    const SIZE_RE = /\bsize\s*:?\s*\d+(?:\.\d+)?|ไซส์\s*:?\s*\d+(?:\.\d+)?|\b\d+\s*(?:cm|ซม|centimeters?)\b/gi;
+
+    function detectMissingLang(text) {
+      if (!text) return 'en';
+      const hasThai = /[\u0E00-\u0E7F]/.test(text);
+      const hasAscii = /[A-Za-z]/.test(text);
+      if (hasThai && hasAscii) return 'mixed';
+      if (hasThai) return 'th';
+      return 'en';
+    }
+
+    function unwrapToolInput(text) {
+      if (!text) return '';
+      const s = String(text).trim();
+      // Some Tool Inputs are JSON like {"query":"..."} or {"product_name":"..."}
+      if (s.startsWith('{') && s.endsWith('}')) {
+        try {
+          const obj = JSON.parse(s);
+          // Pull the most likely text field
+          for (const k of ['query','product_name','name','search','q','text']) {
+            if (obj[k] && typeof obj[k] === 'string') return obj[k];
+          }
+          // Fallback: concat all string values
+          return Object.values(obj).filter(v => typeof v === 'string').join(' ');
+        } catch (e) { /* ignore parse error, fall through */ }
+      }
+      return s;
+    }
+
+    function stripStopwords(text, brand) {
+      if (!text) return '';
+      let s = String(text);
+      // Strip every brand alias from the configured list, plus the matched brand
+      CONFIG.BRANDS.forEach(b => {
+        const re = new RegExp(b.replace(/\s+/g, '\\s*'), 'gi');
+        s = s.replace(re, ' ');
+      });
+      s = s.replace(/sketchers?|sketcher/gi, ' ');
+      s = s.replace(SIZE_RE, ' ').replace(PRICE_RE, ' ').replace(STOP_RE, ' ');
+      s = s.replace(/[?!.,;:()"'\[\]{}\/]+/g, ' ');
+      return s.replace(/\s+/g, ' ').trim();
+    }
+
+    function firstSignificantToken(s) {
+      if (!s) return '';
+      const tokens = (s.match(/[A-Za-z][A-Za-z0-9]*\d*|\d+/g) || [])
+        .filter(t => t.length >= 2 || /^\d+$/.test(t));
+      if (!tokens.length) return '';
+      let out = tokens[0];
+      if (tokens.length > 1 && /^(v?\d+|x\d+|ff\d+|\d+v\d*|pro|max|og|ii+|iii)$/i.test(tokens[1])) {
+        out += ' ' + tokens[1];
+      }
+      return out;
+    }
+
+    function categorizeMissing(text) {
+      for (const c of catRegexes) { if (c.re.test(text)) return c.name; }
+      return 'Other';
+    }
+
+    // Cluster the failed product rows
+    const clusters = {};
+    failedProductRows.forEach(r => {
+      const rawText = unwrapToolInput(r._toolInput) || (r._question || '');
+      const text = rawText.toString();
+      if (!text || text.length < 2) return;
+      const brand = extractBrand(text);
+      const cleaned = stripStopwords(text, brand);
+      if (!cleaned || cleaned.length < 2) return;
+      let key;
+      const lower = cleaned.toLowerCase().replace(/[^\w\u0E00-\u0E7F\s]/g, '').replace(/\s+/g, ' ').trim();
+      if (!lower || lower.length < 2) return;
+      if (brand) {
+        const tok = firstSignificantToken(lower);
+        key = brand + '::' + (tok ? tok.toLowerCase().replace(/\s+/g, '') : lower.replace(/\s+/g, ''));
+      } else {
+        key = '_::' + lower.replace(/\s+/g, '');
+      }
+      if (!clusters[key]) {
+        clusters[key] = {
+          count: 0,
+          brand: brand,
+          name: '',
+          name_len: 0,
+          cats: {},
+          langs: {},
+          examples: []
+        };
+      }
+      const c = clusters[key];
+      c.count++;
+      // Pick the SHORTEST non-trivial cleaned name (less likely to include extra noise)
+      if (!c.name || (cleaned.length >= 3 && cleaned.length < (c.name_len || 999))) {
+        c.name = cleaned;
+        c.name_len = cleaned.length;
+      }
+      const cat = categorizeMissing(text);
+      c.cats[cat] = (c.cats[cat] || 0) + 1;
+      const lang = detectMissingLang(text);
+      c.langs[lang] = (c.langs[lang] || 0) + 1;
+      if (c.examples.length < 3) c.examples.push(text.slice(0, 80));
+    });
+
+    // Pick top 10 by ask count (favor multi-ask items, but include high single-ask if pool is small)
+    const minAsks = totalFailedProduct < 60 ? 1 : 2;
+    const missingItems = Object.values(clusters)
+      .filter(c => c.count >= minAsks)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10)
+      .map(c => {
+        const topCat = Object.entries(c.cats).sort((a,b) => b[1]-a[1])[0]?.[0] || 'Other';
+        const topLang = Object.entries(c.langs).sort((a,b) => b[1]-a[1])[0]?.[0] || 'en';
+        // Title case the model name nicely for display
+        const display = c.name.replace(/\s+/g, ' ').trim();
+        return {
+          name: display.length > 32 ? display.slice(0, 30) + '…' : display,
+          sub: c.examples[0] && c.examples[0] !== display ? c.examples[0].slice(0, 50) : '',
+          brand: c.brand || '—',
+          cat: topCat,
+          lang: topLang,
+          count: c.count
+        };
+      });
+
     // Build the 4 KPI cards for the Lost Demand strip
     const lostDemandKpis = [
       {
@@ -1126,12 +1216,19 @@
       status_banner: statusBanner,
       kpis: [
         {
-          label: 'Total traces',
+          label: 'Total Conversation',
           value: totalCount.toLocaleString(),
           unit: '', color: 'default',
           meta: wow >= 0 ? `+${wow}% week-over-week` : `${wow}% week-over-week`,
           meta_arrow: wow >= 0 ? '↗' : '↘',
           meta_trend: wow > 5 ? 'up' : (wow < -5 ? 'down' : 'flat')
+        },
+        {
+          label: 'Total Trace',
+          value: totalSessions.toLocaleString(),
+          unit: '', color: 'default',
+          meta: 'count distinct Session ID',
+          meta_arrow: '', meta_trend: 'flat'
         },
         {
           label: 'Total messages',
@@ -1200,6 +1297,11 @@
         card_title: `Failed product searches by brand · ${brandTotal} total`,
         card_meta: `Top 10 · ${win.dateList.length}d`,
         items: Object.entries(brandCounts).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([name, value]) => ({ name, value }))
+      },
+      missing: {
+        card_title: 'Top missing items · products customers asked for but not in Supersports catalog',
+        card_meta: `${win.dateList.length}d · top ${missingItems.length} clusters of ${totalFailedProduct.toLocaleString()} failed product searches`,
+        items: missingItems
       },
       lost_demand: {
         kpis: lostDemandKpis,
@@ -1617,6 +1719,37 @@
     });
   }
 
+  function renderMissingItems(missing) {
+    const titleEl = document.getElementById('missingCardTitle');
+    const metaEl = document.getElementById('missingCardMeta');
+    const listEl = document.getElementById('missingItems');
+    if (titleEl) titleEl.textContent = missing.card_title || 'Top missing items · products customers asked for but not in Supersports catalog';
+    if (metaEl) metaEl.textContent = missing.card_meta || '';
+    if (!listEl) return;
+    listEl.innerHTML = '';
+    const items = missing.items || [];
+    if (!items.length) {
+      listEl.innerHTML = `<div style="padding:18px 4px; font-family: var(--mono); font-size: 11px; color: var(--text-3);">No multi-ask missing items in this window.</div>`;
+      return;
+    }
+    items.forEach((it, i) => {
+      const langTag = it.lang === 'mixed' ? 'TH/EN' : (it.lang || 'en').toUpperCase();
+      const langClass = ['th','en','mixed'].includes(it.lang) ? it.lang : 'en';
+      const subHtml = it.sub ? `<span class="nm-sub">${escapeHtml(it.sub)}</span>` : '';
+      const row = document.createElement('div');
+      row.className = 'missing-row';
+      row.innerHTML = `
+        <div class="missing-rank">${String(i + 1).padStart(2, '0')}</div>
+        <div class="missing-name">${escapeHtml(it.name)}${subHtml}</div>
+        <div class="missing-brand">${escapeHtml(it.brand || '—')}</div>
+        <div class="missing-cat">${escapeHtml(it.cat || 'Other')}</div>
+        <div><span class="missing-lang ${langClass}">${escapeHtml(langTag)}</span></div>
+        <div class="missing-count">${it.count}</div>
+      `;
+      listEl.appendChild(row);
+    });
+  }
+
   function renderRecs(recs) {
     document.getElementById('recsDesc').textContent = recs.section_desc || '';
     const grid = document.getElementById('recsGrid');
@@ -1677,6 +1810,7 @@
     renderLanguages(data.languages || {});
     renderBrands(data.brands || {});
     renderLostDemand(data.lost_demand || {});
+    renderMissingItems(data.missing || {});
     renderRecs(data.recommendations || {});
     updateLastUpdated();
   }
