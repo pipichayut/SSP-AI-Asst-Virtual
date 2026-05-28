@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Assistant · Executive Brief · Full Window</title>
+<title>AI Assistant · Executive Brief</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -1143,7 +1143,7 @@
       if (c.examples.length < 3) c.examples.push(text.slice(0, 80));
     });
 
-    // Pick top 10 by ask count (favor multi-ask items, but include high single-ask if pool is small)
+    // Pick top 20 by ask count (favor multi-ask items, but include high single-ask if pool is small)
     const minAsks = totalFailedProduct < 60 ? 1 : 2;
     // Lost-demand focus: keep only SPECIFIC brand/model clusters.
     // Drops generic / no-brand "overall" queries (e.g. "walking shoes for long wear")
@@ -1158,7 +1158,7 @@
       .filter(c => c.count >= minAsks)
       .filter(isSpecificModel)
       .sort((a, b) => b.count - a.count)
-      .slice(0, 10)
+      .slice(0, 20)
       .map(c => {
         const topCat = Object.entries(c.cats).sort((a,b) => b[1]-a[1])[0]?.[0] || 'Other';
         const topLang = Object.entries(c.langs).sort((a,b) => b[1]-a[1])[0]?.[0] || 'en';
@@ -1255,7 +1255,7 @@
       status_banner: statusBanner,
       kpis: [
         {
-          label: 'Total Trace',
+          label: 'Total Sessions',
           value: totalSessions.toLocaleString(),
           unit: '', color: 'default',
           meta: wowSessions >= 0 ? `+${wowSessions}% week-over-week` : `${wowSessions}% week-over-week`,
@@ -1263,7 +1263,7 @@
           meta_trend: wowSessions > 5 ? 'up' : (wowSessions < -5 ? 'down' : 'flat')
         },
         {
-          label: 'Total Conversation',
+          label: 'Total Topics',
           value: totalCount.toLocaleString(),
           unit: '', color: 'default',
           meta: wow >= 0 ? `+${wow}% week-over-week` : `${wow}% week-over-week`,
