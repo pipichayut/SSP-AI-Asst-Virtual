@@ -1145,8 +1145,18 @@
 
     // Pick top 10 by ask count (favor multi-ask items, but include high single-ask if pool is small)
     const minAsks = totalFailedProduct < 60 ? 1 : 2;
+    // Lost-demand focus: keep only SPECIFIC brand/model clusters.
+    // Drops generic / no-brand "overall" queries (e.g. "walking shoes for long wear")
+    // and brand-only phrases with no model descriptor, leaving named models only.
+    function isSpecificModel(c) {
+      if (!c.brand) return false;                       // must name a brand
+      const nm = (c.name || '').trim();
+      if (nm.length < 2) return false;
+      return /[A-Za-z]{2,}|\d/.test(nm);                // must carry a model name/number, not just a generic phrase
+    }
     const missingItems = Object.values(clusters)
       .filter(c => c.count >= minAsks)
+      .filter(isSpecificModel)
       .sort((a, b) => b.count - a.count)
       .slice(0, 10)
       .map(c => {
@@ -1245,20 +1255,20 @@
       status_banner: statusBanner,
       kpis: [
         {
-          label: 'Total Conversation',
-          value: totalCount.toLocaleString(),
-          unit: '', color: 'default',
-          meta: wow >= 0 ? `+${wow}% week-over-week` : `${wow}% week-over-week`,
-          meta_arrow: wow >= 0 ? '↗' : '↘',
-          meta_trend: wow > 5 ? 'up' : (wow < -5 ? 'down' : 'flat')
-        },
-        {
           label: 'Total Trace',
           value: totalSessions.toLocaleString(),
           unit: '', color: 'default',
           meta: wowSessions >= 0 ? `+${wowSessions}% week-over-week` : `${wowSessions}% week-over-week`,
           meta_arrow: wowSessions >= 0 ? '↗' : '↘',
           meta_trend: wowSessions > 5 ? 'up' : (wowSessions < -5 ? 'down' : 'flat')
+        },
+        {
+          label: 'Total Conversation',
+          value: totalCount.toLocaleString(),
+          unit: '', color: 'default',
+          meta: wow >= 0 ? `+${wow}% week-over-week` : `${wow}% week-over-week`,
+          meta_arrow: wow >= 0 ? '↗' : '↘',
+          meta_trend: wow > 5 ? 'up' : (wow < -5 ? 'down' : 'flat')
         },
         {
           label: 'Total messages',
@@ -1331,7 +1341,7 @@
       },
       missing: {
         card_title: 'Top missing items · products customers asked for but not in Supersports catalog',
-        card_meta: `${win.dateList.length}d · top ${missingItems.length} clusters of ${totalFailedProduct.toLocaleString()} failed product searches`,
+        card_meta: `${win.dateList.length}d · top ${missingItems.length} specific-model clusters · generic/no-brand queries excluded`,
         items: missingItems
       },
       lost_demand: {
