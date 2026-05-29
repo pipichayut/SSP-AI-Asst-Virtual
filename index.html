@@ -97,6 +97,8 @@
   .kpi-card .kpi-meta.up { color: var(--mint); }
   .kpi-card .kpi-meta.down { color: var(--red); }
   .kpi-card .kpi-meta.flat { color: var(--amber); }
+  .kpi-card .kpi-avg { font-family: var(--mono); font-size: 11px; color: var(--text-3); margin-top: 6px; }
+  .kpi-card .kpi-avg strong { color: var(--text-2); font-weight: 500; }
 
   /* ========== SECTION ========== */
   .sec { margin-top: 36px; }
@@ -316,7 +318,7 @@
         <div class="card-meta" id="dailyCardMeta">—</div>
       </div>
       <div class="chart-wrap" style="height: 240px;">
-        <canvas id="dailyChart" role="img" aria-label="Daily traces and unresolved rate"></canvas>
+        <canvas id="dailyChart" role="img" aria-label="Daily traces and defect rate"></canvas>
       </div>
     </div>
   </section>
@@ -564,47 +566,89 @@
     return s && THAI_RE.test(s) ? 'th' : 'en';
   }
 
-  function isFailed(r) {
+  // ------------------------------------------------------------
+  // FAIL DEFINITION (V10): "raw-echo / tool-error only"
+  // ------------------------------------------------------------
+  // A row counts as a DEFECT only when the assistant exposed a
+  // machine-level breakdown — NOT for soft conversational hedges
+  // (apologies, "I'm not sure", "couldn't find"). Two defect types:
+  //
+  //   1. TOOL ERROR  — the tool returned an explicit error or an
+  //                    empty/zero machine result (e.g. "[0 items]",
+  //                    "not found", "Error:", a stack-trace, etc.)
+  //                    AND the agent did not recover gracefully.
+  //   2. RAW ECHO    — the agent reply just regurgitated the raw
+  //                    tool output (JSON / bracketed payload / the
+  //                    tool string verbatim) instead of composing a
+  //                    natural-language answer.
+  //
+  // This is deliberately NARROW: a tool that returns "0 results" but
+  // whose agent wraps it in a polite, well-formed reply is NOT a
+  // defect under this definition.
+  // ------------------------------------------------------------
+
+  // Machine-error / empty-result signals seen in Tool Output.
+  const TOOL_ERROR_RE = /(^|[\s\[(])(error|exception|traceback|failed|timeout|null|undefined)\b|\bstatus\s*[:=]\s*(4\d\d|5\d\d)\b|\[0\s+(items?|results?|products?|promos?)\]|\bfound\s+0\b|no\s+products?\s+found|ไม่พบสินค้า|ไม่พบโปรโมชัน|not\s+(found|in\s+system)|^\[0\s/i;
+
+  // Does the agent reply look like a raw, unformatted dump of the tool output?
+  function isRawEcho(out, resp) {
+    const o = String(out || '').trim();
+    const a = String(resp || '').trim();
+    if (!a) return false;
+
+    // Reply is a JSON / array / bracketed machine payload, not prose.
+    if (/^[\[{]/.test(a) && /[\]}]\s*$/.test(a)) return true;
+    if (/^\s*\[\d+\s+(items?|results?|products?|promos?)\]/i.test(a)) return true;
+
+    // Reply contains obvious structured-data syntax with no surrounding prose.
+    if (/^[^A-Za-z\u0E00-\u0E7F]*("[\w ]+"\s*:\s*|[\w_]+\s*=\s*)/.test(a) && a.length < 400) return true;
+
+    // Reply is byte-for-byte (or near) the raw tool output → echoed verbatim.
+    if (o.length > 12) {
+      const norm = s => s.replace(/\s+/g, ' ').trim().toLowerCase();
+      const na = norm(a), no = norm(o);
+      if (na === no) return true;
+      if (no.length > 24 && na.includes(no)) return true;
+    }
+    return false;
+  }
+
+  // Zero-result product search — a CATALOG GAP signal, independent of
+  // whether the reply was a defect. Drives the Lost Demand section so that
+  // gracefully-handled "we don't carry that" answers still surface as
+  // missed buyer intent for merchandising.
+  function isZeroResultProduct(r) {
     const tool = ((r['Tool Used'] || '').trim() || '(direct response)');
+    if (!CONFIG.PRODUCT_SEARCH_TOOLS.includes(tool)) return false;
     const out = String(r['Tool Output'] || '');
     const resp = String(r['Agent Response'] || '');
+    if (/no products?\s+found/i.test(out)) return true;
+    if (/^\[0\s/.test(out) || /\[0\s+(items?|results?|products?)\]/i.test(out)) return true;
+    if (/ไม่พบสินค้า/.test(out) || /not\s+(found|in\s+system)/i.test(out)) return true;
+    if (/ขออภัย/.test(resp) && /(ไม่พบ|ไม่มี)/.test(resp)) return true;
+    if (/couldn'?t find|no matching/i.test(resp)) return true;
+    return false;
+  }
 
-    if (tool === 'product_recommendation' || tool === 'product_guide' || tool === 'product_comparison') {
-      if (/no products?\s+found/i.test(out)) return true;
-      if (/^\[0\s/.test(out) || /\[0\s+items?\]/i.test(out)) return true;
-      if (/ขออภัย/.test(resp) && /(ไม่พบ|ไม่มี)/.test(resp)) return true;
-      if (/couldn'?t find|no matching/i.test(resp)) return true;
-      return false;
+  function isFailed(r) {
+    const out  = String(r['Tool Output'] || '');
+    const resp = String(r['Agent Response'] || '');
+    const tool = ((r['Tool Used'] || '').trim() || '(direct response)');
+
+    // 1. Raw echo of the tool output into the user-facing reply.
+    if (isRawEcho(out, resp)) return true;
+
+    // 2. Tool-level error / empty machine result surfaced to the user.
+    //    (Direct responses have no tool, so they can't have a tool error.)
+    if (tool !== '(direct response)' && TOOL_ERROR_RE.test(out)) {
+      // Only a defect if the agent did NOT wrap it in a graceful reply.
+      // Heuristic: a graceful reply contains real prose (>= 6 words of
+      // letters) and isn't itself an echo. If the reply is empty or also
+      // looks raw, the error reached the user → defect.
+      const wordCount = (resp.match(/[A-Za-z\u0E00-\u0E7F]{2,}/g) || []).length;
+      if (!resp.trim() || wordCount < 6) return true;
     }
 
-    if (tool === 'stock_check') {
-      return /ไม่พบสินค้า/.test(out) || /not\s+(found|in\s+system)/i.test(out) || /\[0\s/.test(out);
-    }
-
-    if (tool === 'check_promotions') {
-      return /ไม่พบโปรโมชัน/.test(out) ||
-             /Found\s+0/i.test(out) ||
-             /\[0\s+promos?\]/i.test(out) ||
-             /\[0\s+items?\]/i.test(out) ||
-             /No\s+promotions?/i.test(out);
-    }
-
-    if (tool === 'order_status') {
-      if (/couldn'?t find an order number/i.test(out)) return true;
-      if (/trouble looking up/i.test(out)) return true;
-      if (/\[0\s+items?\]/i.test(out)) return true;
-      if (/To check your order status, please provide/i.test(out)) return true;
-      return false;
-    }
-
-    if (tool === 'faq_helpdesk' || tool === '(direct response)') {
-      const lc = resp.toLowerCase();
-      const thaiFails = ['ไม่ได้ระบุ','ไม่ทราบ','ไม่แน่ใจ','ขออภัย','ติดต่อเรา','ไม่สามารถ','ไม่พบข้อมูล','ไม่มีข้อมูล','รบกวนแจ้ง','รบกวนคุณ'];
-      const enFails = ["i don't","unable to","unfortunately","i'm sorry","i am sorry","contact us","couldn't find","no information","not specified","cannot find","i do not have","not available"];
-      for (const p of thaiFails) if (resp.includes(p)) return true;
-      for (const p of enFails) if (lc.includes(p)) return true;
-      return false;
-    }
     return false;
   }
 
@@ -641,6 +685,7 @@
       _time: parseFloat(r['Time Taken (s)']) || 0,
       _lang: detectLang(r['Question']),
       _failed: isFailed(r),
+      _zeroResult: isZeroResultProduct(r),
       _question: r['Question'] || '',
       _toolInput: r['Tool Input'] || ''
     };
@@ -963,7 +1008,7 @@
     // Brands (failed product searches across all product-search tools)
     const brandCounts = {};
     inWin.forEach(r => {
-      if (CONFIG.PRODUCT_SEARCH_TOOLS.includes(r._tool) && r._failed) {
+      if (r._zeroResult) {
         const brand = extractBrand((r._toolInput + ' ' + r._question));
         if (brand) brandCounts[brand] = (brandCounts[brand] || 0) + 1;
       }
@@ -973,7 +1018,7 @@
     // ============================================================
     // LOST DEMAND — extended analysis
     // ============================================================
-    const failedProductRows = inWin.filter(r => CONFIG.PRODUCT_SEARCH_TOOLS.includes(r._tool) && r._failed);
+    const failedProductRows = inWin.filter(r => r._zeroResult);
     const totalFailedProduct = failedProductRows.length;
 
     // Sessions that hit at least one failed product search
@@ -1221,7 +1266,7 @@
         statusBanner = {
           show: true, icon: '!',
           title: isOutage ? '1 ACTIVE INCIDENT' : 'TOP PRIORITY',
-          description: `${lead.name} fails ${Math.round(lead.fail)}% across ${lead.vol.toLocaleString()} queries · ${unresolved.toLocaleString()} unresolved`,
+          description: `${lead.name} fails ${Math.round(lead.fail)}% across ${lead.vol.toLocaleString()} queries · ${unresolved.toLocaleString()} defects`,
           tag: isOutage ? 'P0 · ENGINEERING ON-CALL' : 'P0 · KNOWLEDGE OPS'
         };
       } else {
@@ -1240,7 +1285,7 @@
     if (wow > 5) dailyDescBits.push(`Traffic ↑${wow}% WoW`);
     else if (wow < -5) dailyDescBits.push(`Traffic ↓${Math.abs(wow)}% WoW`);
     else dailyDescBits.push('Traffic stable WoW');
-    dailyDescBits.push(`unresolved ${(totalFails/totalCount*100).toFixed(0)}%`);
+    dailyDescBits.push(`defect rate ${(totalFails/totalCount*100).toFixed(1)}%`);
     const dailyDesc = dailyDescBits.join(' · ');
 
     return {
@@ -1260,7 +1305,8 @@
           unit: '', color: 'default',
           meta: wowSessions >= 0 ? `+${wowSessions}% week-over-week` : `${wowSessions}% week-over-week`,
           meta_arrow: wowSessions >= 0 ? '↗' : '↘',
-          meta_trend: wowSessions > 5 ? 'up' : (wowSessions < -5 ? 'down' : 'flat')
+          meta_trend: wowSessions > 5 ? 'up' : (wowSessions < -5 ? 'down' : 'flat'),
+          avg: `avg <strong>${Math.round(totalSessions / win.dateList.length).toLocaleString()}</strong> / day`
         },
         {
           label: 'Total Topics',
@@ -1268,7 +1314,8 @@
           unit: '', color: 'default',
           meta: wow >= 0 ? `+${wow}% week-over-week` : `${wow}% week-over-week`,
           meta_arrow: wow >= 0 ? '↗' : '↘',
-          meta_trend: wow > 5 ? 'up' : (wow < -5 ? 'down' : 'flat')
+          meta_trend: wow > 5 ? 'up' : (wow < -5 ? 'down' : 'flat'),
+          avg: `avg <strong>${Math.round(totalCount / win.dateList.length).toLocaleString()}</strong> / day`
         },
         {
           label: 'Total messages',
@@ -1276,7 +1323,8 @@
           unit: '', color: 'default',
           meta: wowMessages >= 0 ? `+${wowMessages}% week-over-week` : `${wowMessages}% week-over-week`,
           meta_arrow: wowMessages >= 0 ? '↗' : '↘',
-          meta_trend: wowMessages > 5 ? 'up' : (wowMessages < -5 ? 'down' : 'flat')
+          meta_trend: wowMessages > 5 ? 'up' : (wowMessages < -5 ? 'down' : 'flat'),
+          avg: `avg <strong>${Math.round(totalMessages / win.dateList.length).toLocaleString()}</strong> / day`
         },
         {
           label: 'Avg latency',
@@ -1286,10 +1334,10 @@
           meta_arrow: '', meta_trend: avgLatency < 10 ? 'up' : 'flat'
         },
         {
-          label: 'Unresolved rate',
-          value: Math.round(totalFails / totalCount * 100).toString(), unit: '%',
+          label: 'Defect rate',
+          value: (totalFails / totalCount * 100).toFixed(1), unit: '%',
           color: 'red',
-          meta: 'across all tools',
+          meta: 'raw-echo / tool-error only',
           meta_arrow: '', meta_trend: 'flat'
         },
         {
@@ -1312,7 +1360,7 @@
       },
       daily: {
         section_desc: dailyDesc,
-        card_title: 'Traces (bars) · unresolved % (line)',
+        card_title: 'Traces (bars) · defect % (line)',
         card_meta: `${win.dateList.length}d`,
         dates: win.dateList,
         labels: win.dateList.map(fmtShortLabel),
@@ -1396,12 +1444,14 @@
       const trendClass = ['up','down','flat'].includes(k.meta_trend) ? k.meta_trend : '';
       const arrow = k.meta_arrow ? `<span class="arrow">${escapeHtml(k.meta_arrow)}</span>` : '';
       const unit = k.unit ? `<sup>${escapeHtml(k.unit)}</sup>` : '';
+      const avgHtml = k.avg ? `<div class="kpi-avg">${k.avg}</div>` : '';
       const card = document.createElement('div');
       card.className = 'kpi-card';
       card.innerHTML = `
         <div class="kpi-label">${escapeHtml(k.label)}</div>
         <div class="kpi-value ${colorClass}">${escapeHtml(k.value)}${unit}</div>
         <div class="kpi-meta ${trendClass}">${arrow}${escapeHtml(k.meta || '')}</div>
+        ${avgHtml}
       `;
       grid.appendChild(card);
     });
@@ -1489,13 +1539,17 @@
     document.getElementById('dailyCardTitle').textContent = daily.card_title || '';
     document.getElementById('dailyCardMeta').textContent = daily.card_meta || '';
     const labels = daily.labels || [];
+    // Auto-scale the defect axis: round the daily peak up to a sensible cap
+    // so the (now low) defect line stays readable instead of hugging zero.
+    const peakFail = Math.max(0, ...(daily.fail_pct || [0]));
+    const failAxisMax = peakFail <= 5 ? 10 : peakFail <= 10 ? 15 : peakFail <= 25 ? 30 : Math.min(100, Math.ceil(peakFail / 10) * 10 + 10);
 
     charts.daily = new Chart(document.getElementById('dailyChart'), {
       data: {
         labels,
         datasets: [
           { type: 'bar', label: 'Traces', data: daily.volume, backgroundColor: 'rgba(245,245,244,0.85)', borderRadius: 2, yAxisID: 'y', order: 2, barPercentage: 0.7, categoryPercentage: 0.9 },
-          { type: 'line', label: 'Unresolved %', data: daily.fail_pct, borderColor: C.red, backgroundColor: C.red, borderWidth: 2, pointRadius: 2, pointBackgroundColor: C.surface, pointBorderColor: C.red, pointBorderWidth: 1.5, tension: 0.3, yAxisID: 'y1', order: 1 }
+          { type: 'line', label: 'Defect %', data: daily.fail_pct, borderColor: C.red, backgroundColor: C.red, borderWidth: 2, pointRadius: 2, pointBackgroundColor: C.surface, pointBorderColor: C.red, pointBorderWidth: 1.5, tension: 0.3, yAxisID: 'y1', order: 1 }
         ]
       },
       options: {
@@ -1504,7 +1558,7 @@
         scales: {
           x: { ticks: { color: C.text3, font: { size: 9 }, autoSkip: true, maxRotation: 0, maxTicksLimit: 14 }, grid: { display: false } },
           y: { position: 'left', beginAtZero: true, ticks: { color: C.text3, font: { size: 9 } }, grid: { color: C.grid, drawTicks: false } },
-          y1: { position: 'right', beginAtZero: true, max: 60, grid: { drawOnChartArea: false }, ticks: { color: C.red, font: { size: 9 }, callback: v => v + '%' } }
+          y1: { position: 'right', beginAtZero: true, max: failAxisMax, grid: { drawOnChartArea: false }, ticks: { color: C.red, font: { size: 9 }, callback: v => v + '%' } }
         }
       }
     });
