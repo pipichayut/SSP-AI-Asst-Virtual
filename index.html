@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Assistant · Executive Brief</title>
+<title>AI Assistant · Executive Brief · Full Window</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -29,7 +29,6 @@
     --amber-dim: rgba(251, 191, 36, 0.15);
     --cyan: #38BDF8;
     --cyan-dim: rgba(56, 189, 248, 0.15);
-    --cyan-2: rgba(56, 189, 248, 0.35);
     --display: 'Anton', sans-serif;
     --sans: 'Geist', system-ui, sans-serif;
     --mono: 'Geist Mono', ui-monospace, monospace;
@@ -51,36 +50,16 @@
   }
   .brand-text { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-2); font-weight: 500; }
   .brand-text span { color: var(--text-1); }
-  .topbar-meta { display: flex; gap: 28px; align-items: center; font-family: var(--mono); font-size: 11px; }
-  .topbar-meta > div:not(.refresh-wrap) { color: var(--text-3); }
-  .topbar-meta > div:not(.refresh-wrap) strong { color: var(--text-1); font-weight: 500; margin-left: 8px; }
-
-  /* ========== REFRESH ========== */
-  .refresh-wrap { display: flex; align-items: center; gap: 10px; padding-left: 16px; border-left: 1px solid var(--border); }
-  .updated-text { font-family: var(--mono); font-size: 10px; color: var(--text-3); letter-spacing: 0.05em; }
-  .refresh-btn {
-    background: var(--surface-2); border: 1px solid var(--border-2); color: var(--text-2);
-    width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 14px;
-    display: flex; align-items: center; justify-content: center;
-    transition: color 0.2s, border-color 0.2s, background 0.2s; font-family: var(--sans); padding: 0;
-  }
-  .refresh-btn:hover { color: var(--text-1); border-color: var(--text-3); background: var(--surface-3); }
-  .refresh-btn:disabled { opacity: 0.5; cursor: wait; }
-  .refresh-btn .icon { display: inline-block; line-height: 1; }
-  .refresh-btn.spinning .icon { animation: spin 0.9s linear infinite; }
-  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .topbar-meta { display: flex; gap: 28px; font-family: var(--mono); font-size: 11px; }
+  .topbar-meta div { color: var(--text-3); }
+  .topbar-meta div strong { color: var(--text-1); font-weight: 500; margin-left: 8px; }
 
   /* ========== STATUS BANNER ========== */
   .status-banner { display: flex; align-items: center; gap: 16px; margin: 20px 0 28px; padding: 14px 20px; background: var(--red-dim); border: 1px solid var(--red-2); border-radius: 6px; }
-  .status-banner.hidden { display: none; }
   .status-banner .status-icon { width: 28px; height: 28px; background: var(--red); color: var(--bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-size: 18px; flex-shrink: 0; }
   .status-banner .status-text { flex: 1; font-size: 13px; color: var(--text-1); }
   .status-banner .status-text strong { color: var(--red); font-weight: 600; }
   .status-banner .status-meta { font-family: var(--mono); font-size: 11px; color: var(--text-2); white-space: nowrap; }
-
-  /* ========== ERROR BANNER ========== */
-  .err-banner { display: none; margin: 20px 0; padding: 14px 20px; background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 6px; font-family: var(--mono); font-size: 12px; color: var(--amber); }
-  .err-banner.show { display: block; }
 
   /* ========== HERO KPIs ========== */
   .hero-kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 32px; }
@@ -124,6 +103,10 @@
   .tool-row.idle { border-left: 2px solid var(--text-3); }
   .tool-info .tool-name { font-family: var(--mono); font-size: 12px; color: var(--text-1); font-weight: 500; }
   .tool-info .tool-vol { font-family: var(--mono); font-size: 10px; color: var(--text-3); margin-top: 3px; }
+  .tool-info .tool-breakdown { font-family: var(--mono); font-size: 10px; color: var(--text-3); margin-top: 4px; }
+  .tool-info .tool-breakdown .ok-tag { color: #1E9E5A; }
+  .tool-info .tool-breakdown .crit-tag { color: #E5484D; }
+  .tool-info .tool-breakdown .mint-tag { color: #0E9AA7; }
   .tool-stats { display: flex; gap: 16px; }
   .tool-stat { display: flex; flex-direction: column; }
   .tool-stat .lbl { font-family: var(--mono); font-size: 9px; color: var(--text-3); letter-spacing: 0.08em; text-transform: uppercase; }
@@ -143,24 +126,45 @@
   /* ========== CHART HOLDERS ========== */
   .chart-wrap { position: relative; width: 100%; }
 
+  /* ========== LOST DEMAND ENHANCEMENTS ========== */
+  .ld-kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; }
+  .ld-kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; }
+  .ld-kpi .lbl { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+  .ld-kpi .val { font-family: var(--display); font-size: 32px; line-height: 1; letter-spacing: 0.02em; color: var(--text-1); }
+  .ld-kpi .val.red { color: var(--red); }
+  .ld-kpi .val.amber { color: var(--amber); }
+  .ld-kpi .val.cyan { color: var(--cyan); }
+  .ld-kpi .sub { font-family: var(--mono); font-size: 10px; color: var(--text-2); margin-top: 6px; }
+  .ld-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* ========== MISSING ITEMS LIST ========== */
+  .missing-items { display: flex; flex-direction: column; }
+  .missing-row { display: grid; grid-template-columns: 28px 1fr 110px 130px 70px 70px; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .missing-row:last-child { border-bottom: none; }
+  .missing-row:hover { background: rgba(255,255,255,0.015); }
+  .missing-rank { font-family: var(--mono); font-size: 11px; color: var(--text-3); }
+  .missing-name { font-family: var(--sans); font-size: 13px; color: var(--text-1); font-weight: 500; }
+  .missing-name .nm-sub { display: block; font-family: var(--mono); font-size: 10px; color: var(--text-3); margin-top: 2px; font-weight: 400; }
+  .missing-brand { font-family: var(--mono); font-size: 10px; color: var(--text-2); letter-spacing: 0.05em; text-transform: uppercase; }
+  .missing-cat { font-family: var(--mono); font-size: 10px; color: var(--text-3); letter-spacing: 0.04em; }
+  .missing-lang { font-family: var(--mono); font-size: 9px; padding: 3px 7px; border-radius: 3px; letter-spacing: 0.06em; text-align: center; font-weight: 500; }
+  .missing-lang.th { background: rgba(255, 84, 112, 0.12); color: var(--red); }
+  .missing-lang.en { background: rgba(56, 189, 248, 0.12); color: var(--cyan); }
+  .missing-lang.mixed { background: rgba(251, 191, 36, 0.12); color: var(--amber); }
+  .missing-count { font-family: var(--display); font-size: 22px; color: var(--red); text-align: right; letter-spacing: 0.02em; }
+  .missing-head { display: grid; grid-template-columns: 28px 1fr 110px 130px 70px 70px; gap: 14px; padding: 0 0 10px; border-bottom: 1px solid var(--border-2); margin-bottom: 4px; }
+  .missing-head div { font-family: var(--mono); font-size: 9px; color: var(--text-3); letter-spacing: 0.12em; text-transform: uppercase; }
+  .missing-head .h-count { text-align: right; }
+
   /* ========== INCIDENTS ROW ========== */
   .row-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 12px; }
-  .incident-card { background: var(--surface); border-radius: 8px; padding: 20px 24px; position: relative; overflow: hidden; transition: border-color 0.2s; }
-  .incident-card.active { border: 1px solid var(--red-2); }
-  .incident-card.active::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--red); }
-  .incident-card.resolved { border: 1px solid var(--cyan-2); }
-  .incident-card.resolved::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--cyan); }
-  .incident-card.none { border: 1px solid var(--border); }
-  .incident-tag { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
+  .incident-card { background: var(--surface); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 8px; padding: 20px 24px; position: relative; overflow: hidden; }
+  .incident-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--cyan); }
+  .incident-tag { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; color: var(--cyan); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
   .incident-tag::before { content: '●'; font-size: 12px; }
-  .incident-tag.active { color: var(--red); }
-  .incident-tag.resolved { color: var(--cyan); }
-  .incident-tag.none { color: var(--text-3); }
   .incident-title { font-family: var(--display); font-size: 26px; letter-spacing: 0.02em; line-height: 1.05; text-transform: uppercase; }
-  .incident-title.active em { color: var(--red); font-style: normal; }
-  .incident-title.resolved em { color: var(--cyan); font-style: normal; }
-  .incident-title.none em { color: var(--text-2); font-style: normal; }
-  .incident-stats { display: flex; gap: 24px; margin: 16px 0 6px; padding: 14px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .incident-title em { color: var(--cyan); font-style: normal; }
+  .incident-stats { display: flex; gap: 24px; margin: 16px 0 6px; padding: 14px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
   .incident-stat .lbl { font-family: var(--mono); font-size: 9px; color: var(--text-3); letter-spacing: 0.1em; text-transform: uppercase; }
   .incident-stat .val { font-family: var(--display); font-size: 30px; color: var(--text-1); margin-top: 3px; letter-spacing: 0.02em; }
   .incident-stat .val.red { color: var(--red); }
@@ -195,66 +199,55 @@
   /* ========== FOOTER ========== */
   footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; color: var(--text-3); letter-spacing: 0.1em; }
 
-  /* ========== LOADING ========== */
-  .loading-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 100; transition: opacity 0.3s; }
-  .loading-overlay.hide { opacity: 0; pointer-events: none; }
-  .loading-overlay .spinner { width: 32px; height: 32px; border: 2px solid var(--border-2); border-top-color: var(--red); border-radius: 50%; animation: spin 0.9s linear infinite; }
-
-  /* ========== LOST DEMAND ENHANCEMENTS ========== */
-  .ld-kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; }
-  .ld-kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; }
-  .ld-kpi .lbl { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
-  .ld-kpi .val { font-family: var(--display); font-size: 32px; line-height: 1; letter-spacing: 0.02em; color: var(--text-1); }
-  .ld-kpi .val.red { color: var(--red); }
-  .ld-kpi .val.amber { color: var(--amber); }
-  .ld-kpi .val.cyan { color: var(--cyan); }
-  .ld-kpi .val .small { font-size: 18px; opacity: 0.6; }
-  .ld-kpi .val .lbl-inline { font-size: 18px; color: var(--text-3); }
-  .ld-kpi .sub { font-family: var(--mono); font-size: 10px; color: var(--text-2); margin-top: 6px; }
-  .ld-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-  /* ========== MISSING ITEMS LIST ========== */
-  .missing-items { display: flex; flex-direction: column; }
-  .missing-row { display: grid; grid-template-columns: 28px 1fr 110px 130px 70px 70px; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
-  .missing-row:last-child { border-bottom: none; }
-  .missing-row:hover { background: rgba(255,255,255,0.015); }
-  .missing-rank { font-family: var(--mono); font-size: 11px; color: var(--text-3); }
-  .missing-name { font-family: var(--sans); font-size: 13px; color: var(--text-1); font-weight: 500; }
-  .missing-name .nm-sub { display: block; font-family: var(--mono); font-size: 10px; color: var(--text-3); margin-top: 2px; font-weight: 400; }
-  .missing-brand { font-family: var(--mono); font-size: 10px; color: var(--text-2); letter-spacing: 0.05em; text-transform: uppercase; }
-  .missing-cat { font-family: var(--mono); font-size: 10px; color: var(--text-3); letter-spacing: 0.04em; }
-  .missing-lang { font-family: var(--mono); font-size: 9px; padding: 3px 7px; border-radius: 3px; letter-spacing: 0.06em; text-align: center; font-weight: 500; }
-  .missing-lang.th { background: rgba(255, 84, 112, 0.12); color: var(--red); }
-  .missing-lang.en { background: rgba(56, 189, 248, 0.12); color: var(--cyan); }
-  .missing-lang.mixed { background: rgba(251, 191, 36, 0.12); color: var(--amber); }
-  .missing-count { font-family: var(--display); font-size: 22px; color: var(--red); text-align: right; letter-spacing: 0.02em; }
-  .missing-head { display: grid; grid-template-columns: 28px 1fr 110px 130px 70px 70px; gap: 14px; padding: 0 0 10px; border-bottom: 1px solid var(--border-2); margin-bottom: 4px; }
-  .missing-head div { font-family: var(--mono); font-size: 9px; color: var(--text-3); letter-spacing: 0.12em; text-transform: uppercase; }
-  .missing-head .h-count { text-align: right; }
-
   /* ========== RESPONSIVE ========== */
   @media (max-width: 1100px) {
     .page { padding: 24px 20px; }
     .hero-kpis { grid-template-columns: repeat(2, 1fr); }
-    .ld-kpi-strip { grid-template-columns: repeat(2, 1fr); }
-    .ld-grid { grid-template-columns: 1fr; }
     .tool-grid { grid-template-columns: 1fr; }
     .tool-row { grid-template-columns: 1fr 1fr; gap: 12px; }
     .row-2 { grid-template-columns: 1fr; }
     .recs { grid-template-columns: repeat(2, 1fr); }
     .topbar { flex-direction: column; align-items: flex-start; gap: 12px; }
-    .topbar-meta { flex-wrap: wrap; gap: 16px; }
-    .refresh-wrap { padding-left: 0; border-left: none; }
     .sec-head { flex-direction: column; align-items: flex-start; gap: 6px; }
     .sec-title { margin: 0; }
     .sec-desc { text-align: left; }
   }
+
+  /* ========== DYNAMIC STATE (added for live data) ========== */
+  .hidden { display: none !important; }
+  .kpi-card .kpi-value .small { font-size: 18px; opacity: 0.6; }
+  .kpi-card .kpi-value .lbl-inline { font-size: 18px; color: var(--text-3); }
+  .topbar-meta .updated { display: flex; align-items: center; gap: 8px; }
+  .updated-text { color: var(--text-3); }
+  .refresh-btn { background: var(--surface-2); border: 1px solid var(--border-2); color: var(--text-2);
+    width: 26px; height: 26px; border-radius: 6px; cursor: pointer; font-size: 13px; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center; transition: all .2s; }
+  .refresh-btn:hover { color: var(--text-1); border-color: var(--text-3); }
+  .refresh-btn.spinning .icon { display: inline-block; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .err-banner { display: none; margin: 16px 0; padding: 12px 18px; background: var(--red-dim);
+    border: 1px solid var(--red-2); border-radius: 6px; color: var(--red);
+    font-family: var(--mono); font-size: 12px; }
+  .err-banner.show { display: block; }
+  .loading-overlay { position: fixed; inset: 0; background: var(--bg); display: flex;
+    align-items: center; justify-content: center; z-index: 999; transition: opacity .4s; }
+  .loading-overlay.hide { opacity: 0; pointer-events: none; }
+  .spinner { width: 34px; height: 34px; border: 3px solid var(--border-2);
+    border-top-color: var(--red); border-radius: 50%; animation: spin .8s linear infinite; }
+  /* incident card states */
+  .incident-card.active { border: 1px solid var(--red-2); }
+  .incident-card.active::before { background: var(--red); }
+  .incident-card.active .incident-tag { color: var(--red); }
+  .incident-card.active .incident-title em { color: var(--red); }
+  .incident-card.none { border: 1px solid var(--border); }
+  .incident-card.none::before { background: var(--text-3); }
+  .incident-card.none .incident-tag { color: var(--text-3); }
+  .incident-card.none .incident-title em { color: var(--text-2); }
+
 </style>
 </head>
 <body>
-
 <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
-
 <div class="page">
 
   <!-- ========== TOP BAR ========== -->
@@ -267,14 +260,12 @@
       <div>WINDOW<strong id="metaWindow">—</strong></div>
       <div>RANGE<strong id="metaRange">—</strong></div>
       <div>TZ<strong id="metaTz">—</strong></div>
-      <div class="refresh-wrap">
-        <span class="updated-text" id="lastUpdated">—</span>
+      <div class="updated"><span class="updated-text" id="lastUpdated">—</span>
         <button class="refresh-btn" id="refreshBtn" title="Refresh data" aria-label="Refresh data"><span class="icon">↻</span></button>
       </div>
     </div>
   </div>
 
-  <!-- ========== ERROR BANNER ========== -->
   <div class="err-banner" id="errBanner"></div>
 
   <!-- ========== STATUS BANNER ========== -->
@@ -285,7 +276,7 @@
   </div>
 
   <!-- ========== HERO KPIs ========== -->
-  <div class="hero-kpis" id="kpiGrid"></div>
+  <div class="hero-kpis" id="heroKpis"></div>
 
   <!-- ========== SEC 01 — LATENCY ========== -->
   <section class="sec">
@@ -300,7 +291,7 @@
         <div class="card-meta" id="latencyCardMeta">—</div>
       </div>
       <div class="chart-wrap" style="height: 240px;">
-        <canvas id="latencyChart" role="img" aria-label="Average latency per day"></canvas>
+        <canvas id="latencyChart" role="img" aria-label="Average latency per day over 42 days"></canvas>
       </div>
     </div>
   </section>
@@ -318,7 +309,7 @@
         <div class="card-meta" id="dailyCardMeta">—</div>
       </div>
       <div class="chart-wrap" style="height: 240px;">
-        <canvas id="dailyChart" role="img" aria-label="Daily traces and defect rate"></canvas>
+        <canvas id="dailyChart" role="img" aria-label="Daily traces and unresolved rate over 42 days"></canvas>
       </div>
     </div>
   </section>
@@ -338,23 +329,23 @@
     <div class="sec-head">
       <div class="sec-num">04</div>
       <h2 class="sec-title">Critical patterns</h2>
-      <div class="sec-desc" id="incidentDesc">—</div>
+      <div class="sec-desc">Partial-recovery promo outage + structural language gap</div>
     </div>
     <div class="row-2">
 
-      <div class="incident-card none" id="incidentCard">
-        <div class="incident-tag none" id="incidentTag">—</div>
-        <h3 class="incident-title none" id="incidentTitle">—</h3>
+      <div class="incident-card" id="incidentCard">
+        <div class="incident-tag" id="incidentTag">—</div>
+        <h3 class="incident-title" id="incidentTitle"><em>—</em></h3>
         <div class="incident-stats" id="incidentStats"></div>
         <div class="chart-wrap" style="height: 180px; margin-top: 6px;">
-          <canvas id="promoChart" role="img" aria-label="Incident failure rate timeline"></canvas>
+          <canvas id="promoChart" role="img" aria-label="Promo failure rate timeline"></canvas>
         </div>
       </div>
 
       <div class="lang-card">
         <div class="card-head">
-          <div class="card-title" id="langCardTitle">—</div>
-          <div class="card-meta" id="langCardMeta">—</div>
+          <div class="card-title">Language gap by tool · fail %</div>
+          <div class="card-meta">EN · TH</div>
         </div>
         <div class="lang-bars" id="langBars"></div>
       </div>
@@ -367,18 +358,18 @@
     <div class="sec-head">
       <div class="sec-num">05</div>
       <h2 class="sec-title">Lost demand</h2>
-      <div class="sec-desc" id="brandsDesc">—</div>
+      <div class="sec-desc">Buyer intent the catalog missed · forward to merchandising</div>
     </div>
 
     <!-- KPI strip -->
     <div class="ld-kpi-strip" id="ldKpiStrip"></div>
 
-    <!-- Brand chart + category chart side-by-side -->
+    <!-- Brand chart + category chart side by side -->
     <div class="ld-grid">
       <div class="card">
         <div class="card-head">
-          <div class="card-title" id="brandsCardTitle">—</div>
-          <div class="card-meta" id="brandsCardMeta">—</div>
+          <div class="card-title" id="brandCardTitle">—</div>
+          <div class="card-meta" id="brandCardMeta">—</div>
         </div>
         <div class="chart-wrap" style="height: 240px;">
           <canvas id="brandChart" role="img" aria-label="Failed product searches by brand"></canvas>
@@ -386,8 +377,8 @@
       </div>
       <div class="card">
         <div class="card-head">
-          <div class="card-title" id="categoryCardTitle">By sport / category · where intent lives</div>
-          <div class="card-meta" id="categoryCardMeta">—</div>
+          <div class="card-title" id="catCardTitle">—</div>
+          <div class="card-meta" id="catCardMeta">—</div>
         </div>
         <div class="chart-wrap" style="height: 240px;">
           <canvas id="categoryChart" role="img" aria-label="Failed product searches by category"></canvas>
@@ -398,7 +389,7 @@
     <!-- Top missing items list -->
     <div class="card" style="margin-top: 12px;">
       <div class="card-head">
-        <div class="card-title" id="missingCardTitle">Top missing items · products customers asked for but not in Supersports catalog</div>
+        <div class="card-title" id="missingCardTitle">—</div>
         <div class="card-meta" id="missingCardMeta">—</div>
       </div>
       <div class="missing-head">
@@ -411,6 +402,7 @@
       </div>
       <div class="missing-items" id="missingItems"></div>
     </div>
+
   </section>
 
   <!-- ========== SEC 06 — RECS ========== -->
@@ -426,15 +418,30 @@
   <footer>
     <span id="footerSource">—</span>
     <span id="footerRange">—</span>
-    <span id="footerLabel">—</span>
+    <span id="footerLabel">EXECUTIVE BRIEF · DATA-GAP LOGIC</span>
   </footer>
 
 </div>
 
+
 <script>
   // ============================================================
-  // CONFIG — edit this block to wire up your data + tune behavior
+  // CHART DEFAULTS + PALETTE (V9)
   // ============================================================
+  Chart.defaults.font.family = "'Geist', system-ui, sans-serif";
+  Chart.defaults.font.size = 10;
+  Chart.defaults.color = 'rgba(245, 245, 244, 0.55)';
+  Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.06)';
+
+  const C = {
+    text1: '#F5F5F4', text2: 'rgba(245, 245, 244, 0.62)', text3: 'rgba(245, 245, 244, 0.38)',
+    red: '#FF5470', mint: '#34D399', amber: '#FBBF24', cyan: '#38BDF8',
+    grid: 'rgba(255, 255, 255, 0.05)', surface: '#11141B'
+  };
+
+  let charts = {};
+  function destroyChart(k) { if (charts[k]) { charts[k].destroy(); delete charts[k]; } }
+
   const CONFIG = {
     // Your Google Sheet published as CSV (File → Share → Publish to web → CSV)
     DATA_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRGMFK-952N9nSsKiOEJ4JvnuKtdUoe3a7LzqG87yNbmdIcwS_gllZmA0NKsMDei5EGaVSV0qC0moLO/pub?output=csv',
@@ -522,25 +529,7 @@
     INCIDENT_RECOVERY_THRESHOLD: 0.35 // average over recent days; below this = resolved
   };
 
-  // ============================================================
-  // CHART DEFAULTS
-  // ============================================================
-  Chart.defaults.font.family = "'Geist', system-ui, sans-serif";
-  Chart.defaults.font.size = 10;
-  Chart.defaults.color = 'rgba(245, 245, 244, 0.55)';
-  Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.06)';
 
-  const C = {
-    text1: '#F5F5F4', text2: 'rgba(245, 245, 244, 0.62)', text3: 'rgba(245, 245, 244, 0.38)',
-    red: '#FF5470', mint: '#34D399', amber: '#FBBF24', cyan: '#38BDF8',
-    grid: 'rgba(255, 255, 255, 0.05)', surface: '#11141B'
-  };
-
-  let charts = {};
-
-  // ============================================================
-  // CSV FETCH + PARSE
-  // ============================================================
   async function loadData() {
     if (CONFIG.DATA_URL.startsWith('PASTE_')) {
       throw new Error('DATA_URL not set. Open index.html and paste your published-CSV URL.');
@@ -1407,300 +1396,194 @@
     };
   }
 
-  function showError(msg) {
-    const el = document.getElementById('errBanner');
-    el.textContent = `⚠ ${msg}`;
-    el.classList.add('show');
-  }
-  function clearError() { document.getElementById('errBanner').classList.remove('show'); }
 
   // ============================================================
-  // RENDERERS
+  // RENDERERS  — V9 design, live data
   // ============================================================
+  const $ = id => document.getElementById(id);
+  const setText = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+  const setHTML = (id, v) => { const el = $(id); if (el) el.innerHTML = v; };
+
   function renderMeta(meta) {
-    document.getElementById('metaWindow').textContent = meta.window || '—';
-    document.getElementById('metaRange').textContent = meta.range || '—';
-    document.getElementById('metaTz').textContent = meta.tz || '—';
-    document.getElementById('footerSource').textContent = `SOURCE · ${meta.footer_source || ''}`;
-    document.getElementById('footerRange').textContent = meta.footer_range || '';
-    document.getElementById('footerLabel').textContent = meta.footer_label || '';
+    setText('metaWindow', meta.window);
+    setText('metaRange', meta.range);
+    setText('metaTz', meta.tz);
+    setText('footerSource', meta.footer_source);
+    setText('footerRange', meta.footer_range);
+    setText('footerLabel', meta.footer_label || 'EXECUTIVE BRIEF · DATA-GAP LOGIC');
   }
 
   function renderStatusBanner(sb) {
-    const el = document.getElementById('statusBanner');
+    const el = $('statusBanner');
     if (!sb || !sb.show) { el.classList.add('hidden'); return; }
     el.classList.remove('hidden');
-    document.getElementById('statusIcon').textContent = sb.icon || '!';
-    document.getElementById('statusText').innerHTML =
-      `<strong>${escapeHtml(sb.title || '')}</strong> · ${escapeHtml(sb.description || '')}`;
-    document.getElementById('statusMeta').textContent = sb.tag || '';
+    setText('statusIcon', sb.icon || '!');
+    setHTML('statusText', `<strong>${sb.title}</strong> · ${sb.description}`);
+    setText('statusMeta', sb.tag || '');
   }
 
   function renderKpis(kpis) {
-    const grid = document.getElementById('kpiGrid');
-    grid.innerHTML = '';
+    const wrap = $('heroKpis');
+    wrap.innerHTML = '';
     kpis.forEach(k => {
-      const colorClass = ['red','mint','amber'].includes(k.color) ? k.color : '';
-      const trendClass = ['up','down','flat'].includes(k.meta_trend) ? k.meta_trend : '';
-      const arrow = k.meta_arrow ? `<span class="arrow">${escapeHtml(k.meta_arrow)}</span>` : '';
-      const unit = k.unit ? `<sup>${escapeHtml(k.unit)}</sup>` : '';
-      const avgHtml = k.avg ? `<div class="kpi-avg">${k.avg}</div>` : '';
-      const card = document.createElement('div');
-      card.className = 'kpi-card';
-      card.innerHTML = `
-        <div class="kpi-label">${escapeHtml(k.label)}</div>
-        <div class="kpi-value ${colorClass}">${escapeHtml(k.value)}${unit}</div>
-        <div class="kpi-meta ${trendClass}">${arrow}${escapeHtml(k.meta || '')}</div>
-        ${avgHtml}
-      `;
-      grid.appendChild(card);
+      const colorClass = k.color && k.color !== 'default' ? ` ${k.color}` : '';
+      const unit = k.unit ? `<sup>${k.unit}</sup>` : '';
+      const valueHtml = k.valueSuffix ? `${k.value}${k.valueSuffix}` : `${k.value}${unit}`;
+      const trend = k.meta_trend || 'flat';
+      const arrow = k.meta_arrow ? `<span class="arrow">${k.meta_arrow}</span>` : '';
+      const avg = k.avg ? `<div class="kpi-avg">${k.avg}</div>` : '';
+      wrap.innerHTML += `
+        <div class="kpi-card">
+          <div class="kpi-label">${k.label}</div>
+          <div class="kpi-value${colorClass}">${valueHtml}</div>
+          <div class="kpi-meta ${trend}">${arrow}${k.meta || ''}</div>
+          ${avg}
+        </div>`;
     });
   }
 
-  function makeLatencyTargetLine(target) {
-    return {
-      id: 'latencyTargetLine',
-      afterDatasetsDraw(chart) {
-        const { ctx, chartArea: { left, right }, scales: { y } } = chart;
-        const yPos = y.getPixelForValue(target);
-        ctx.save();
-        ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([4, 4]);
-        ctx.beginPath();
-        ctx.moveTo(left, yPos); ctx.lineTo(right, yPos); ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.fillStyle = '#FBBF24';
-        ctx.font = '500 9px "Geist Mono", ui-monospace, monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText(`TARGET ${target}s`, right - 4, yPos - 5);
-        ctx.restore();
-      }
-    };
-  }
+  // ---------- SEC 01 · LATENCY ----------
+  const latencyTargetLine = {
+    id: 'latencyTargetLine',
+    afterDatasetsDraw(chart) {
+      const t = chart.$target || 8;
+      const { ctx, chartArea: { left, right }, scales: { y } } = chart;
+      const yPos = y.getPixelForValue(t);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(left, yPos); ctx.lineTo(right, yPos); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#FBBF24'; ctx.font = '500 9px "Geist Mono", ui-monospace, monospace'; ctx.textAlign = 'right';
+      ctx.fillText('TARGET ' + t + 's', right - 4, yPos - 5);
+      ctx.restore();
+    }
+  };
 
-  function renderLatencyChart(latency) {
-    document.getElementById('latencyTitle').textContent = latency.title || 'Average latency';
-    document.getElementById('latencyDesc').textContent = latency.section_desc || '';
-    document.getElementById('latencyCardTitle').textContent = latency.card_title || '';
-    document.getElementById('latencyCardMeta').textContent = latency.card_meta || '';
-    const labels = latency.labels || [];
-    const target = latency.target || 8;
-    const vals = (latency.values || []).filter(v => v > 0);
-    const maxVal = vals.length ? Math.max(target, ...vals) : target;
-    const minVal = vals.length ? Math.min(target, ...vals) : 0;
-
-    charts.latency = new Chart(document.getElementById('latencyChart'), {
+  function renderLatency(d) {
+    setText('latencyTitle', d.title);
+    setText('latencyDesc', d.section_desc);
+    setText('latencyCardTitle', d.card_title);
+    setText('latencyCardMeta', d.card_meta);
+    destroyChart('latency');
+    const ctxEl = $('latencyChart'); ctxEl.$target = d.target;
+    charts.latency = new Chart(ctxEl, {
       type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label: 'Avg latency',
-          data: latency.values,
-          borderColor: C.mint,
-          backgroundColor: 'rgba(52, 211, 153, 0.10)',
-          borderWidth: 2,
-          pointRadius: (ctx) => ctx.parsed.y > target ? 3.5 : 2,
-          pointBackgroundColor: (ctx) => ctx.parsed.y > target ? C.amber : C.surface,
-          pointBorderColor: (ctx) => ctx.parsed.y > target ? C.amber : C.mint,
-          pointBorderWidth: 1.5,
-          pointHoverRadius: 6,
-          tension: 0.35,
-          fill: true
-        }]
-      },
+      data: { labels: d.labels, datasets: [{
+        label: 'Avg latency', data: d.values, borderColor: C.mint,
+        backgroundColor: 'rgba(52, 211, 153, 0.10)', borderWidth: 2,
+        pointRadius: ctx => ctx.parsed.y > d.target ? 3.5 : 2,
+        pointBackgroundColor: ctx => ctx.parsed.y > d.target ? C.amber : C.surface,
+        pointBorderColor: ctx => ctx.parsed.y > d.target ? C.amber : C.mint,
+        pointBorderWidth: 1.5, pointHoverRadius: 6, tension: 0.35, fill: true
+      }] },
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#08090C', titleColor: C.text1, bodyColor: C.text2,
-            borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, padding: 10,
-            callbacks: { label: ctx => ctx.parsed.y.toFixed(1) + 's avg latency' }
-          }
-        },
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#08090C', titleColor: C.text1, bodyColor: C.text2, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, padding: 10, callbacks: { label: ctx => ctx.parsed.y.toFixed(1) + 's avg latency' } } },
         scales: {
-          x: { ticks: { color: C.text3, font: { size: 9 }, autoSkip: true, maxRotation: 0, maxTicksLimit: 14 }, grid: { display: false } },
-          y: {
-            beginAtZero: false,
-            suggestedMin: Math.max(0, minVal - 1),
-            suggestedMax: maxVal + 2,
-            ticks: { color: C.text3, font: { size: 9 }, callback: v => v + 's' },
-            grid: { color: C.grid }
-          }
+          x: { ticks: { color: C.text3, font: { size: 9 }, autoSkip: true, maxRotation: 0, maxTicksLimit: 12 }, grid: { display: false } },
+          y: { beginAtZero: false, suggestedMin: 5, suggestedMax: 14, ticks: { color: C.text3, font: { size: 9 }, callback: v => v + 's', stepSize: 2 }, grid: { color: C.grid } }
         }
       },
-      plugins: [makeLatencyTargetLine(target)]
+      plugins: [latencyTargetLine]
     });
+    charts.latency.$target = d.target;
   }
 
-  function renderDailyChart(daily) {
-    document.getElementById('dailyDesc').textContent = daily.section_desc || '';
-    document.getElementById('dailyCardTitle').textContent = daily.card_title || '';
-    document.getElementById('dailyCardMeta').textContent = daily.card_meta || '';
-    const labels = daily.labels || [];
-    // Auto-scale the defect axis: round the daily peak up to a sensible cap
-    // so the (now low) defect line stays readable instead of hugging zero.
-    const peakFail = Math.max(0, ...(daily.fail_pct || [0]));
-    const failAxisMax = peakFail <= 5 ? 10 : peakFail <= 10 ? 15 : peakFail <= 25 ? 30 : Math.min(100, Math.ceil(peakFail / 10) * 10 + 10);
-
-    charts.daily = new Chart(document.getElementById('dailyChart'), {
-      data: {
-        labels,
-        datasets: [
-          { type: 'bar', label: 'Traces', data: daily.volume, backgroundColor: 'rgba(245,245,244,0.85)', borderRadius: 2, yAxisID: 'y', order: 2, barPercentage: 0.7, categoryPercentage: 0.9 },
-          { type: 'line', label: 'Defect %', data: daily.fail_pct, borderColor: C.red, backgroundColor: C.red, borderWidth: 2, pointRadius: 2, pointBackgroundColor: C.surface, pointBorderColor: C.red, pointBorderWidth: 1.5, tension: 0.3, yAxisID: 'y1', order: 1 }
-        ]
-      },
+  // ---------- SEC 02 · DAILY ----------
+  function renderDaily(d) {
+    setText('dailyDesc', d.section_desc);
+    setText('dailyCardTitle', d.card_title);
+    setText('dailyCardMeta', d.card_meta);
+    destroyChart('daily');
+    const maxFail = Math.max(10, Math.ceil(Math.max(...d.fail_pct) / 10) * 10);
+    charts.daily = new Chart($('dailyChart'), {
+      data: { labels: d.labels, datasets: [
+        { type: 'bar', label: 'Traces', data: d.volume, backgroundColor: 'rgba(245,245,244,0.85)', borderRadius: 2, yAxisID: 'y', order: 2, barPercentage: 0.7, categoryPercentage: 0.9 },
+        { type: 'line', label: 'Defect %', data: d.fail_pct, borderColor: C.red, backgroundColor: C.red, borderWidth: 2, pointRadius: 2, pointBackgroundColor: C.surface, pointBorderColor: C.red, pointBorderWidth: 1.5, tension: 0.3, yAxisID: 'y1', order: 1 }
+      ] },
       options: {
         responsive: true, maintainAspectRatio: false,
         plugins: { legend: { display: false }, tooltip: { backgroundColor: '#08090C', titleColor: C.text1, bodyColor: C.text2, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, padding: 10 } },
         scales: {
-          x: { ticks: { color: C.text3, font: { size: 9 }, autoSkip: true, maxRotation: 0, maxTicksLimit: 14 }, grid: { display: false } },
+          x: { ticks: { color: C.text3, font: { size: 9 }, autoSkip: true, maxRotation: 0, maxTicksLimit: 12 }, grid: { display: false } },
           y: { position: 'left', beginAtZero: true, ticks: { color: C.text3, font: { size: 9 } }, grid: { color: C.grid, drawTicks: false } },
-          y1: { position: 'right', beginAtZero: true, max: failAxisMax, grid: { drawOnChartArea: false }, ticks: { color: C.red, font: { size: 9 }, callback: v => v + '%' } }
+          y1: { position: 'right', beginAtZero: true, max: maxFail, grid: { drawOnChartArea: false }, ticks: { color: C.red, font: { size: 9 }, callback: v => v + '%' } }
         }
       }
     });
   }
 
-  function renderTools(toolsObj, daily) {
-    document.getElementById('toolsDesc').textContent = toolsObj.section_desc || '';
-    const tools = toolsObj.items || [];
-    const grid = document.getElementById('toolGrid');
+  // ---------- SEC 03 · TOOL GRID (V9 rows + sparklines) ----------
+  function renderTools(t) {
+    setText('toolsDesc', t.section_desc);
+    Object.keys(charts).filter(k => k.startsWith('spark-')).forEach(destroyChart);
+    const grid = $('toolGrid');
     grid.innerHTML = '';
-
-    tools.forEach((t, i) => {
-      const failColorClass = t.fail >= 50 ? 'red' : t.fail >= 25 ? 'amber' : 'mint';
-      const pillKey = ['crit','warn','ok','recovered','idle'].includes(t.status) ? t.status : 'idle';
+    t.items.forEach((tool, i) => {
+      const failColorClass = tool.fail >= 50 ? 'red' : tool.fail >= 25 ? 'amber' : 'mint';
+      const pillClass = tool.status === 'crit' ? 'crit' : tool.status === 'warn' ? 'warn'
+                      : tool.status === 'ok' ? 'ok' : tool.status === 'recovered' ? 'recovered' : 'idle';
       const card = document.createElement('div');
-      card.className = `tool-row ${t.status}`;
+      card.className = `tool-row ${tool.status}`;
       card.innerHTML = `
         <div class="tool-info">
-          <div class="tool-name">${escapeHtml(t.name)}</div>
-          <div class="tool-vol">${Number(t.vol).toLocaleString()} traces · ${t.share}%</div>
+          <div class="tool-name">${tool.name}</div>
+          <div class="tool-vol">${tool.vol.toLocaleString()} traces · ${tool.share}%</div>
         </div>
         <div class="tool-stats">
-          <div class="tool-stat"><div class="lbl">Fail</div><div class="val ${failColorClass}">${t.fail}<span style="font-size:13px;">%</span></div></div>
-          <div class="tool-stat"><div class="lbl">Avg</div><div class="val text-1">${t.time}<span style="font-size:13px;">s</span></div></div>
+          <div class="tool-stat"><div class="lbl">Fail</div><div class="val ${failColorClass}">${tool.fail}<span style="font-size:13px;">%</span></div></div>
+          <div class="tool-stat"><div class="lbl">Avg</div><div class="val text-1">${tool.time}<span style="font-size:13px;">s</span></div></div>
         </div>
         <div class="chart-wrap tool-spark"><canvas id="tool-spark-${i}"></canvas></div>
-        <div class="tool-pill pill-${pillKey}">${escapeHtml(t.pill)}</div>
-      `;
+        <div class="tool-pill pill-${pillClass}">${tool.pill}</div>`;
       grid.appendChild(card);
     });
-
-    charts.tools = [];
-    tools.forEach((t, i) => {
-      const sparkColor = t.status === 'crit' ? C.red
-                       : t.status === 'warn' ? C.amber
-                       : t.status === 'ok' ? C.mint
-                       : t.status === 'recovered' ? C.cyan
-                       : C.text3;
-      const fillColor = t.status === 'crit' ? 'rgba(255, 84, 112, 0.12)'
-                      : t.status === 'warn' ? 'rgba(251, 191, 36, 0.10)'
-                      : t.status === 'ok' ? 'rgba(52, 211, 153, 0.10)'
-                      : t.status === 'recovered' ? 'rgba(56, 189, 248, 0.10)'
-                      : 'rgba(255, 255, 255, 0.04)';
-      const chart = new Chart(document.getElementById(`tool-spark-${i}`), {
+    t.items.forEach((tool, i) => {
+      const sparkColor = tool.status === 'crit' ? C.red : tool.status === 'warn' ? C.amber
+                       : tool.status === 'ok' ? C.mint : tool.status === 'recovered' ? C.cyan : C.text3;
+      const fillColor = tool.status === 'crit' ? 'rgba(255, 84, 112, 0.12)' : tool.status === 'warn' ? 'rgba(251, 191, 36, 0.10)'
+                      : tool.status === 'ok' ? 'rgba(52, 211, 153, 0.10)' : tool.status === 'recovered' ? 'rgba(56, 189, 248, 0.10)' : 'rgba(255, 255, 255, 0.04)';
+      charts['spark-' + i] = new Chart($(`tool-spark-${i}`), {
         type: 'line',
-        data: { labels: daily.labels, datasets: [{ data: t.daily_fail, borderColor: sparkColor, backgroundColor: fillColor, fill: true, tension: 0.35, pointRadius: 0, borderWidth: 1.5 }] },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { enabled: false } },
-          scales: { x: { display: false }, y: { display: false, min: 0, max: 100 } }
-        }
+        data: { labels: tool.daily_fail.map((_, j) => j), datasets: [{ data: tool.daily_fail, borderColor: sparkColor, backgroundColor: fillColor, fill: true, tension: 0.35, pointRadius: 0, borderWidth: 1.5 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { display: false, min: 0, max: 100 } } }
       });
-      charts.tools.push(chart);
     });
   }
 
-  function renderIncident(inc, daily) {
-    const card = document.getElementById('incidentCard');
-    const tag = document.getElementById('incidentTag');
-    const title = document.getElementById('incidentTitle');
-
-    document.getElementById('incidentDesc').textContent = inc.section_desc || '';
-
-    // Apply state class to card / tag / title
-    card.classList.remove('active','resolved','none');
-    tag.classList.remove('active','resolved','none');
-    title.classList.remove('active','resolved','none');
-    card.classList.add(inc.state);
-    tag.classList.add(inc.state);
-    title.classList.add(inc.state);
-
-    tag.textContent = inc.tag || '';
-    title.innerHTML = inc.title_html || '';
-
-    const statsEl = document.getElementById('incidentStats');
-    statsEl.innerHTML = '';
+  // ---------- SEC 04 · INCIDENT + LANGUAGE ----------
+  function renderIncident(inc) {
+    const card = $('incidentCard');
+    card.className = `incident-card ${inc.state}`;
+    setText('incidentTag', inc.tag);
+    setHTML('incidentTitle', inc.title_html);
+    const stats = $('incidentStats');
+    stats.innerHTML = '';
     (inc.stats || []).forEach(s => {
-      const colorClass = ['red','mint','cyan'].includes(s.color) ? s.color : '';
-      const unitHtml = s.unit ? `<span style="font-size:18px;">${escapeHtml(s.unit)}</span>` : '';
-      const div = document.createElement('div');
-      div.className = 'incident-stat';
-      div.innerHTML = `<div class="lbl">${escapeHtml(s.lbl)}</div><div class="val ${colorClass}">${escapeHtml(s.val)}${unitHtml}</div>`;
-      statsEl.appendChild(div);
+      const colorClass = s.color && s.color !== 'default' ? ` ${s.color}` : '';
+      const unit = s.unit ? `<span style="font-size:18px;">${s.unit}</span>` : '';
+      stats.innerHTML += `<div class="incident-stat"><div class="lbl">${s.lbl}</div><div class="val${colorClass}">${s.val}${unit}</div></div>`;
     });
-
-    const outageStart = Number.isInteger(inc.outage_start_idx) ? inc.outage_start_idx : -1;
-    const outageEnd = Number.isInteger(inc.outage_end_idx) ? inc.outage_end_idx : -1;
-    const recoveryIdx = (outageEnd >= 0 && outageEnd + 1 < (daily.dates || []).length) ? outageEnd + 1 : -1;
-    const baseColor = inc.state === 'resolved' ? C.cyan : (inc.state === 'active' ? C.red : C.text3);
-    const baseFill = inc.state === 'resolved' ? 'rgba(56, 189, 248, 0.12)' : (inc.state === 'active' ? 'rgba(255, 84, 112, 0.15)' : 'rgba(255, 255, 255, 0.04)');
-
-    charts.promo = new Chart(document.getElementById('promoChart'), {
+    destroyChart('promo');
+    const oS = inc.outage_start_idx, oE = inc.outage_end_idx;
+    charts.promo = new Chart($('promoChart'), {
       type: 'line',
-      data: {
-        labels: daily.labels || [],
-        datasets: [{
-          data: inc.chart_data || [],
-          borderColor: baseColor,
-          backgroundColor: baseFill,
-          segment: {
-            borderColor: (ctx) => {
-              const i = ctx.p0DataIndex;
-              if (outageStart >= 0 && outageEnd >= outageStart && i >= outageStart && i < outageEnd) return C.red;
-              return baseColor;
-            },
-            backgroundColor: (ctx) => {
-              const i = ctx.p0DataIndex;
-              if (outageStart >= 0 && outageEnd >= outageStart && i >= outageStart && i < outageEnd) return 'rgba(255, 84, 112, 0.20)';
-              return baseFill;
-            }
-          },
-          borderWidth: 2,
-          pointRadius: (ctx) => {
-            const i = ctx.dataIndex;
-            if (i === outageStart && outageStart >= 0) return 5;
-            if (i === recoveryIdx && recoveryIdx >= 0) return 5;
-            return 1.8;
-          },
-          pointBackgroundColor: (ctx) => {
-            const i = ctx.dataIndex;
-            if (i === outageStart) return C.red;
-            if (i === recoveryIdx) return C.mint;
-            return C.surface;
-          },
-          pointBorderColor: (ctx) => {
-            const i = ctx.dataIndex;
-            if (i === outageStart) return C.red;
-            if (i === recoveryIdx) return C.mint;
-            if (outageStart >= 0 && outageEnd >= outageStart && i > outageStart && i <= outageEnd) return C.red;
-            return baseColor;
-          },
-          pointBorderWidth: (ctx) => (ctx.dataIndex === outageStart || ctx.dataIndex === recoveryIdx) ? 2 : 1.2,
-          fill: true,
-          tension: 0.15
-        }]
-      },
+      data: { labels: inc.chart_data.map((_, i) => i), datasets: [{
+        data: inc.chart_data,
+        borderColor: C.cyan,
+        segment: {
+          borderColor: ctx => (oS >= 0 && ctx.p0DataIndex >= oS && ctx.p0DataIndex <= oE) ? C.red : C.cyan,
+          backgroundColor: ctx => (oS >= 0 && ctx.p0DataIndex >= oS && ctx.p0DataIndex <= oE) ? 'rgba(255, 84, 112, 0.20)' : 'rgba(56, 189, 248, 0.12)'
+        },
+        borderWidth: 2,
+        pointRadius: ctx => (ctx.dataIndex === oS || ctx.dataIndex === oE + 1) ? 5 : 1.8,
+        pointBackgroundColor: ctx => ctx.dataIndex === oS ? C.red : ctx.dataIndex === oE + 1 ? C.mint : C.surface,
+        pointBorderColor: ctx => ctx.dataIndex === oS ? C.red : ctx.dataIndex === oE + 1 ? C.mint : (oS >= 0 && ctx.dataIndex > oS && ctx.dataIndex <= oE) ? C.red : C.cyan,
+        fill: true, tension: 0.15
+      }] },
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: { backgroundColor: '#08090C', titleColor: C.text1, bodyColor: C.text2, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, callbacks: { label: ctx => ctx.parsed.y.toFixed(1) + '% failed' } }
-        },
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#08090C', titleColor: C.text1, bodyColor: C.text2, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, callbacks: { label: ctx => ctx.parsed.y.toFixed(1) + '% failed' } } },
         scales: {
           x: { ticks: { color: C.text3, font: { size: 9 }, autoSkip: true, maxRotation: 0, maxTicksLimit: 10 }, grid: { display: false } },
           y: { beginAtZero: true, max: 100, ticks: { color: C.text3, font: { size: 9 }, callback: v => v + '%', stepSize: 25 }, grid: { color: C.grid } }
@@ -1710,102 +1593,72 @@
   }
 
   function renderLanguages(lang) {
-    document.getElementById('langCardTitle').textContent = lang.card_title || '';
-    document.getElementById('langCardMeta').textContent = lang.card_meta || '';
-    const wrap = document.getElementById('langBars');
-    wrap.innerHTML = '';
+    const bars = $('langBars');
+    bars.innerHTML = '';
     (lang.rows || []).forEach(d => {
-      const row = document.createElement('div');
-      row.className = 'lang-bar-row';
-      row.innerHTML = `
-        <div class="tool-lbl">${escapeHtml(d.tool)}</div>
-        <div class="lang-bar-stack">
-          <div class="lang-bar"><div class="fill en" style="width:${Math.min(100, d.en)}%;"></div><div class="pct-label">EN ${Number(d.en).toFixed(0)}%</div></div>
-          <div class="lang-bar"><div class="fill th" style="width:${Math.min(100, d.th)}%;"></div><div class="pct-label">TH ${Number(d.th).toFixed(0)}%</div></div>
-        </div>
-      `;
-      wrap.appendChild(row);
+      bars.innerHTML += `
+        <div class="lang-bar-row">
+          <div class="tool-lbl">${d.tool}</div>
+          <div class="lang-bar-stack">
+            <div class="lang-bar"><div class="fill en" style="width:${Math.min(100, d.en)}%;"></div><div class="pct-label">EN ${d.en.toFixed(0)}%</div></div>
+            <div class="lang-bar"><div class="fill th" style="width:${Math.min(100, d.th)}%;"></div><div class="pct-label">TH ${d.th.toFixed(0)}%</div></div>
+          </div>
+        </div>`;
     });
   }
 
-  function renderBrands(brands) {
-    document.getElementById('brandsDesc').textContent = brands.section_desc || '';
-    document.getElementById('brandsCardTitle').textContent = brands.card_title || '';
-    document.getElementById('brandsCardMeta').textContent = brands.card_meta || '';
-    const items = brands.items || [];
-    charts.brand = new Chart(document.getElementById('brandChart'), {
+  // ---------- SEC 05 · LOST DEMAND ----------
+  function renderLostDemand(brands, lost) {
+    // KPI strip
+    const strip = $('ldKpiStrip');
+    strip.innerHTML = '';
+    (lost.kpis || []).forEach(k => {
+      const colorClass = k.color && k.color !== 'default' ? ` ${k.color}` : '';
+      const valueHtml = k.valueSuffix ? `${k.value}${k.valueSuffix}` : k.value;
+      strip.innerHTML += `
+        <div class="ld-kpi">
+          <div class="lbl">${k.label}</div>
+          <div class="val${colorClass}">${valueHtml}</div>
+          <div class="sub">${k.sub || ''}</div>
+        </div>`;
+    });
+
+    // Brand chart
+    setText('brandCardTitle', brands.card_title);
+    setText('brandCardMeta', brands.card_meta);
+    destroyChart('brand');
+    charts.brand = new Chart($('brandChart'), {
       type: 'bar',
-      data: {
-        labels: items.map(i => i.name),
-        datasets: [{
-          data: items.map(i => i.value),
-          backgroundColor: (ctx) => {
-            const v = ctx.parsed?.y ?? 0;
-            if (v >= 25) return C.red;
-            if (v >= 12) return C.amber;
-            return 'rgba(245, 245, 244, 0.7)';
-          },
-          borderRadius: 3, barPercentage: 0.7
-        }]
-      },
+      data: { labels: brands.items.map(b => b.name), datasets: [{
+        data: brands.items.map(b => b.value),
+        backgroundColor: ctx => { const v = ctx.parsed?.y ?? 0; return v >= 25 ? C.red : v >= 12 ? C.amber : 'rgba(245, 245, 244, 0.7)'; },
+        borderRadius: 3, barPercentage: 0.7
+      }] },
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: { backgroundColor: '#08090C', titleColor: C.text1, bodyColor: C.text2, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, callbacks: { label: ctx => ctx.parsed.y + ' failed queries' } }
-        },
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#08090C', titleColor: C.text1, bodyColor: C.text2, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, callbacks: { label: ctx => ctx.parsed.y + ' failed queries' } } },
         scales: {
           x: { grid: { display: false }, ticks: { color: C.text3, font: { size: 9 }, maxRotation: 35, minRotation: 35 } },
           y: { beginAtZero: true, ticks: { color: C.text3, font: { size: 9 } }, grid: { color: C.grid } }
         }
       }
     });
-  }
 
-  function renderLostDemand(ld) {
-    // ---- KPI strip
-    const strip = document.getElementById('ldKpiStrip');
-    strip.innerHTML = '';
-    (ld.kpis || []).forEach(k => {
-      const colorClass = ['red','amber','cyan','mint'].includes(k.color) ? k.color : '';
-      const suffix = k.valueSuffix || '';
-      const card = document.createElement('div');
-      card.className = 'ld-kpi';
-      card.innerHTML = `
-        <div class="lbl">${escapeHtml(k.label)}</div>
-        <div class="val ${colorClass}">${escapeHtml(String(k.value))}${suffix}</div>
-        <div class="sub">${escapeHtml(k.sub || '')}</div>
-      `;
-      strip.appendChild(card);
-    });
-
-    // ---- Category chart (horizontal bars)
-    const cat = ld.category || { items: [] };
-    document.getElementById('categoryCardTitle').textContent = cat.card_title || '';
-    document.getElementById('categoryCardMeta').textContent = cat.card_meta || '';
-    const items = cat.items || [];
-    charts.category = new Chart(document.getElementById('categoryChart'), {
+    // Category chart
+    const cat = lost.category;
+    setText('catCardTitle', cat.card_title);
+    setText('catCardMeta', cat.card_meta);
+    destroyChart('category');
+    charts.category = new Chart($('categoryChart'), {
       type: 'bar',
-      data: {
-        labels: items.map(i => i.name),
-        datasets: [{
-          data: items.map(i => i.value),
-          backgroundColor: (ctx) => {
-            const v = ctx.parsed?.x ?? 0;
-            if (v >= 100) return C.red;
-            if (v >= 25)  return C.amber;
-            return 'rgba(56, 189, 248, 0.6)';
-          },
-          borderRadius: 3, barPercentage: 0.75
-        }]
-      },
+      data: { labels: cat.items.map(c => c.name), datasets: [{
+        data: cat.items.map(c => c.value),
+        backgroundColor: ctx => { const v = ctx.parsed?.x ?? 0; return v >= 100 ? C.red : v >= 25 ? C.amber : 'rgba(56, 189, 248, 0.6)'; },
+        borderRadius: 3, barPercentage: 0.75
+      }] },
       options: {
-        indexAxis: 'y',
-        responsive: true, maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: { backgroundColor: '#08090C', titleColor: C.text1, bodyColor: C.text2, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, callbacks: { label: ctx => ctx.parsed.x + ' failed queries' } }
-        },
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#08090C', titleColor: C.text1, bodyColor: C.text2, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, callbacks: { label: ctx => ctx.parsed.x + ' failed queries' } } },
         scales: {
           x: { beginAtZero: true, ticks: { color: C.text3, font: { size: 9 } }, grid: { color: C.grid } },
           y: { grid: { display: false }, ticks: { color: C.text2, font: { size: 10 } } }
@@ -1814,105 +1667,72 @@
     });
   }
 
-  function renderMissingItems(missing) {
-    const titleEl = document.getElementById('missingCardTitle');
-    const metaEl = document.getElementById('missingCardMeta');
-    const listEl = document.getElementById('missingItems');
-    if (titleEl) titleEl.textContent = missing.card_title || 'Top missing items · products customers asked for but not in Supersports catalog';
-    if (metaEl) metaEl.textContent = missing.card_meta || '';
-    if (!listEl) return;
-    listEl.innerHTML = '';
-    const items = missing.items || [];
-    if (!items.length) {
-      listEl.innerHTML = `<div style="padding:18px 4px; font-family: var(--mono); font-size: 11px; color: var(--text-3);">No multi-ask missing items in this window.</div>`;
-      return;
-    }
-    items.forEach((it, i) => {
-      const langTag = it.lang === 'mixed' ? 'TH/EN' : (it.lang || 'en').toUpperCase();
-      const langClass = ['th','en','mixed'].includes(it.lang) ? it.lang : 'en';
-      const subHtml = it.sub ? `<span class="nm-sub">${escapeHtml(it.sub)}</span>` : '';
-      const row = document.createElement('div');
-      row.className = 'missing-row';
-      row.innerHTML = `
-        <div class="missing-rank">${String(i + 1).padStart(2, '0')}</div>
-        <div class="missing-name">${escapeHtml(it.name)}${subHtml}</div>
-        <div class="missing-brand">${escapeHtml(it.brand || '—')}</div>
-        <div class="missing-cat">${escapeHtml(it.cat || 'Other')}</div>
-        <div><span class="missing-lang ${langClass}">${escapeHtml(langTag)}</span></div>
-        <div class="missing-count">${it.count}</div>
-      `;
-      listEl.appendChild(row);
+  function renderMissing(missing) {
+    setText('missingCardTitle', missing.card_title);
+    setText('missingCardMeta', missing.card_meta);
+    const list = $('missingItems');
+    list.innerHTML = '';
+    missing.items.forEach((it, i) => {
+      const langClass = it.lang === 'mixed' ? 'mixed' : it.lang;
+      const langLabel = it.lang === 'mixed' ? 'TH/EN' : it.lang.toUpperCase();
+      const sub = it.sub ? `<span class="nm-sub">${it.sub}</span>` : '';
+      list.innerHTML += `
+        <div class="missing-row">
+          <div class="missing-rank">${String(i + 1).padStart(2, '0')}</div>
+          <div class="missing-name">${it.name}${sub}</div>
+          <div class="missing-brand">${it.brand}</div>
+          <div class="missing-cat">${it.cat}</div>
+          <div><span class="missing-lang ${langClass}">${langLabel}</span></div>
+          <div class="missing-count">${it.count}</div>
+        </div>`;
     });
   }
 
+  // ---------- SEC 06 · RECS ----------
   function renderRecs(recs) {
-    document.getElementById('recsDesc').textContent = recs.section_desc || '';
-    const grid = document.getElementById('recsGrid');
+    setText('recsDesc', recs.section_desc);
+    const grid = $('recsGrid');
     grid.innerHTML = '';
-    (recs.items || []).forEach(r => {
-      const tierClass = ['p0','p1','p2'].includes(r.tier) ? r.tier : 'p2';
-      const card = document.createElement('div');
-      card.className = 'rec-card';
-      card.innerHTML = `
-        <div class="rec-num">${escapeHtml(String(r.rank))}</div>
-        <div class="rec-tier ${tierClass}">${escapeHtml(r.tier_label || '')}</div>
-        <h4>${escapeHtml(r.title || '')}</h4>
-        <div class="rec-stats">
-          <span class="rec-tag">Effort <strong>${escapeHtml(r.effort || '')}</strong></span>
-          <span class="rec-tag">Impact <strong>${escapeHtml(r.impact || '')}</strong></span>
-        </div>
-      `;
-      grid.appendChild(card);
+    recs.items.forEach(r => {
+      grid.innerHTML += `
+        <div class="rec-card">
+          <div class="rec-num">${r.rank}</div>
+          <div class="rec-tier ${r.tier}">${r.tier_label}</div>
+          <h4>${r.title}</h4>
+          <div class="rec-stats">
+            <span class="rec-tag">Effort <strong>${r.effort}</strong></span>
+            <span class="rec-tag">Impact <strong>${r.impact}</strong></span>
+          </div>
+        </div>`;
     });
   }
 
   function updateLastUpdated() {
     const now = new Date();
-    const hh = String(now.getHours()).padStart(2, '0');
-    const mm = String(now.getMinutes()).padStart(2, '0');
-    document.getElementById('lastUpdated').textContent = `LOADED ${hh}:${mm}`;
+    setText('lastUpdated', 'Updated ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
   }
 
-  function destroyCharts() {
-    if (charts.daily) charts.daily.destroy();
-    if (charts.latency) charts.latency.destroy();
-    if (charts.promo) charts.promo.destroy();
-    if (charts.brand) charts.brand.destroy();
-    if (charts.category) charts.category.destroy();
-    if (Array.isArray(charts.tools)) charts.tools.forEach(c => c && c.destroy());
-    charts = {};
-  }
-
-  function escapeHtml(s) {
-    if (s === null || s === undefined) return '';
-    return String(s).replace(/[&<>"']/g, ch => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    })[ch]);
-  }
-
-  // ============================================================
-  // ORCHESTRATION
-  // ============================================================
   function render(data) {
-    destroyCharts();
-    renderMeta(data.meta || {});
+    renderMeta(data.meta);
     renderStatusBanner(data.status_banner);
-    renderKpis(data.kpis || []);
-    renderLatencyChart(data.latency || {});
-    renderDailyChart(data.daily || {});
-    renderTools(data.tools || {}, data.daily || {});
-    renderIncident(data.incident || {}, data.daily || {});
-    renderLanguages(data.languages || {});
-    renderBrands(data.brands || {});
-    renderLostDemand(data.lost_demand || {});
-    renderMissingItems(data.missing || {});
-    renderRecs(data.recommendations || {});
+    renderKpis(data.kpis);
+    renderLatency(data.latency);
+    renderDaily(data.daily);
+    renderTools(data.tools);
+    renderIncident(data.incident);
+    renderLanguages(data.languages || { rows: [] });
+    renderLostDemand(data.brands, data.lost_demand);
+    renderMissing(data.missing);
+    renderRecs(data.recommendations);
     updateLastUpdated();
   }
 
+  function showError(msg) { const el = $('errBanner'); el.textContent = `⚠ ${msg}`; el.classList.add('show'); }
+  function clearError() { $('errBanner').classList.remove('show'); }
+
   async function init(triggeredByButton = false) {
-    const btn = document.getElementById('refreshBtn');
-    if (triggeredByButton) { btn.disabled = true; btn.classList.add('spinning'); }
+    const btn = $('refreshBtn');
+    if (triggeredByButton && btn) { btn.disabled = true; btn.classList.add('spinning'); }
     try {
       const data = await loadData();
       clearError();
@@ -1921,15 +1741,14 @@
       console.error(err);
       showError(`Failed to load data: ${err.message}. Check that your published-CSV URL is reachable.`);
     } finally {
-      document.getElementById('loadingOverlay').classList.add('hide');
-      if (triggeredByButton) {
-        setTimeout(() => { btn.disabled = false; btn.classList.remove('spinning'); }, 400);
-      }
+      $('loadingOverlay').classList.add('hide');
+      if (triggeredByButton && btn) setTimeout(() => { btn.disabled = false; btn.classList.remove('spinning'); }, 400);
     }
   }
 
-  document.getElementById('refreshBtn').addEventListener('click', () => init(true));
+  $('refreshBtn').addEventListener('click', () => init(true));
   init(false);
+
 </script>
 
 </body>
