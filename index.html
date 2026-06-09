@@ -972,7 +972,40 @@
       } else {
         status = 'ok'; pill = 'HEALTHY';
       }
-      return { name, vol, share: +(vol / totalCount * 100).toFixed(1), fail: +failPct.toFixed(1), time: +avgT.toFixed(1), status, pill, daily_fail: dailyFail };
+      // ----------------------------------------------------------------
+      // Per-tool breakdown line (mirrors V9):
+      //  • product-search tools → of all failed rows, how many still had a
+      //    result returned (raw-echo / formatting defect) vs genuinely had
+      //    NO result (zero-result / "no products found").
+      //  • stock_check → split every row into branch/store vs online intent.
+      // ----------------------------------------------------------------
+      let breakdown = null;
+      if (name === 'stock_check') {
+        const BRANCH_RE = /\bbranch\b|\bstore\b|\bshop\b|in[-\s]?store|สาขา|หน้าร้าน|ร้าน/i;
+        const ONLINE_RE = /\bonline\b|\bweb\b|\bwebsite\b|\bapp\b|\bdelivery\b|จัดส่ง|ออนไลน์|เว็บ|แอป|เดลิเวอรี/i;
+        let branch = 0, online = 0;
+        data.rows.forEach(r => {
+          const text = `${r._question} ${r._toolInput} ${String((r._raw && r._raw['Tool Input']) || '')}`;
+          const isBranch = BRANCH_RE.test(text);
+          const isOnline = ONLINE_RE.test(text);
+          if (isBranch && !isOnline) branch++;
+          else if (isOnline && !isBranch) online++;
+          else if (isBranch && isOnline) { branch++; online++; }
+          else branch++; // default unspecified stock checks to branch/store lookup
+        });
+        breakdown = { type: 'stock', branch_stock: branch, online_stock: online };
+      } else if (CONFIG.PRODUCT_SEARCH_TOOLS.includes(name)) {
+        const failedRows = data.rows.filter(r => r._failed);
+        const failTotal = failedRows.length;
+        // "without result" = the failure was a true zero-result / no-products-found.
+        const noAnswer = failedRows.filter(r => r._zeroResult).length;
+        // "with result" = failed for another reason (raw echo, formatting) but a result existed.
+        const hasAnswer = failTotal - noAnswer;
+        if (failTotal > 0) {
+          breakdown = { type: 'product', fail_total: failTotal, has_answer: hasAnswer, no_answer: noAnswer };
+        }
+      }
+      return { name, vol, share: +(vol / totalCount * 100).toFixed(1), fail: +failPct.toFixed(1), time: +avgT.toFixed(1), status, pill, daily_fail: dailyFail, breakdown };
     }).sort((a, b) => b.vol - a.vol);
 
     // Language gap (overall)
@@ -1525,10 +1558,18 @@
                       : tool.status === 'ok' ? 'ok' : tool.status === 'recovered' ? 'recovered' : 'idle';
       const card = document.createElement('div');
       card.className = `tool-row ${tool.status}`;
+      let breakdownHtml = '';
+      const b = tool.breakdown;
+      if (b && b.type === 'product') {
+        breakdownHtml = `<div class="tool-breakdown">of ${b.fail_total} failed · <span class="ok-tag">${b.has_answer} with result</span> · <span class="crit-tag">${b.no_answer} without result</span></div>`;
+      } else if (b && b.type === 'stock') {
+        breakdownHtml = `<div class="tool-breakdown"><span class="ok-tag">${b.branch_stock} branch-store</span> · <span class="mint-tag">${b.online_stock} online</span> stock checks</div>`;
+      }
       card.innerHTML = `
         <div class="tool-info">
           <div class="tool-name">${tool.name}</div>
           <div class="tool-vol">${tool.vol.toLocaleString()} traces · ${tool.share}%</div>
+          ${breakdownHtml}
         </div>
         <div class="tool-stats">
           <div class="tool-stat"><div class="lbl">Fail</div><div class="val ${failColorClass}">${tool.fail}<span style="font-size:13px;">%</span></div></div>
