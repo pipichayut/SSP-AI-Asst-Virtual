@@ -619,10 +619,35 @@
     return false;
   }
 
+  // For product_recommendation: did the tool actually return at least one product?
+  // "[N items]" with N>0 in Tool Output → has a result; zero-result → catalog gap.
+  function productHasResult(r) {
+    const out = String(r['Tool Output'] || '');
+    if (isZeroResultProduct(r)) return false;
+    const m = out.match(/\[(\d+)\s+(items?|results?|products?)\]/i);
+    if (m) return parseInt(m[1], 10) > 0;
+    return false;
+  }
+
+  // For stock_check: is the customer asking about IN-STORE / BRANCH stock, or ONLINE availability?
+  const STOCK_BRANCH_RE = /สาขา|หน้าร้าน|ที่ร้าน|มีของที่|มีจำหน่ายที่|in[- ]?store|in[- ]?branch|\bstore\b|\bbranch\b|central|robinson|เซ็นทรัล|โรบินสัน|ภูเก็ต|กรุงเทพ|รังสิต|พระราม|แจ้งวัฒนะ|บางแค|ซีคอน/i;
+  function stockIsBranch(r) {
+    const q = String(r['Question'] || '') + ' ' + String(r['Tool Input'] || '');
+    return STOCK_BRANCH_RE.test(q);
+  }
+
   function isFailed(r) {
     const out  = String(r['Tool Output'] || '');
     const resp = String(r['Agent Response'] || '');
     const tool = ((r['Tool Used'] || '').trim() || '(direct response)');
+
+    // product_recommendation: a row counts as FAILED only when the agent
+    // returned NO answer at all to the customer (blank Agent Response).
+    // Any reply — even "we don't carry that" — is treated as handled.
+    if (tool === 'product_recommendation') {
+      const a = resp.trim().toLowerCase();
+      return a === '' || a === 'nan' || a === 'none' || a === 'null';
+    }
 
     // 1. Raw echo of the tool output into the user-facing reply.
     if (isRawEcho(out, resp)) return true;
@@ -972,38 +997,16 @@
       } else {
         status = 'ok'; pill = 'HEALTHY';
       }
-      // ----------------------------------------------------------------
-      // Per-tool breakdown line (mirrors V9):
-      //  • product-search tools → of all failed rows, how many still had a
-      //    result returned (raw-echo / formatting defect) vs genuinely had
-      //    NO result (zero-result / "no products found").
-      //  • stock_check → split every row into branch/store vs online intent.
-      // ----------------------------------------------------------------
+      // ── Tool-specific breakdowns (shown under the volume line) ──
       let breakdown = null;
-      if (name === 'stock_check') {
-        const BRANCH_RE = /\bbranch\b|\bstore\b|\bshop\b|in[-\s]?store|สาขา|หน้าร้าน|ร้าน/i;
-        const ONLINE_RE = /\bonline\b|\bweb\b|\bwebsite\b|\bapp\b|\bdelivery\b|จัดส่ง|ออนไลน์|เว็บ|แอป|เดลิเวอรี/i;
-        let branch = 0, online = 0;
-        data.rows.forEach(r => {
-          const text = `${r._question} ${r._toolInput} ${String((r._raw && r._raw['Tool Input']) || '')}`;
-          const isBranch = BRANCH_RE.test(text);
-          const isOnline = ONLINE_RE.test(text);
-          if (isBranch && !isOnline) branch++;
-          else if (isOnline && !isBranch) online++;
-          else if (isBranch && isOnline) { branch++; online++; }
-          else branch++; // default unspecified stock checks to branch/store lookup
-        });
-        breakdown = { type: 'stock', branch_stock: branch, online_stock: online };
-      } else if (CONFIG.PRODUCT_SEARCH_TOOLS.includes(name)) {
-        const failedRows = data.rows.filter(r => r._failed);
-        const failTotal = failedRows.length;
-        // "without result" = the failure was a true zero-result / no-products-found.
-        const noAnswer = failedRows.filter(r => r._zeroResult).length;
-        // "with result" = failed for another reason (raw echo, formatting) but a result existed.
-        const hasAnswer = failTotal - noAnswer;
-        if (failTotal > 0) {
-          breakdown = { type: 'product', fail_total: failTotal, has_answer: hasAnswer, no_answer: noAnswer };
-        }
+      if (name === 'product_recommendation') {
+        const withResult = data.rows.filter(r => productHasResult(r._raw)).length;
+        const withoutResult = vol - withResult;
+        breakdown = `of ${vol.toLocaleString()} answers · <span class="ok-tag">${withResult.toLocaleString()} with result</span> · <span class="crit-tag">${withoutResult.toLocaleString()} without result</span>`;
+      } else if (name === 'stock_check') {
+        const branch = data.rows.filter(r => stockIsBranch(r._raw)).length;
+        const online = vol - branch;
+        breakdown = `<span class="ok-tag">${branch.toLocaleString()} in-store / branch</span> · <span class="mint-tag">${online.toLocaleString()} online</span> stock checks`;
       }
       return { name, vol, share: +(vol / totalCount * 100).toFixed(1), fail: +failPct.toFixed(1), time: +avgT.toFixed(1), status, pill, daily_fail: dailyFail, breakdown };
     }).sort((a, b) => b.vol - a.vol);
@@ -1558,18 +1561,11 @@
                       : tool.status === 'ok' ? 'ok' : tool.status === 'recovered' ? 'recovered' : 'idle';
       const card = document.createElement('div');
       card.className = `tool-row ${tool.status}`;
-      let breakdownHtml = '';
-      const b = tool.breakdown;
-      if (b && b.type === 'product') {
-        breakdownHtml = `<div class="tool-breakdown">of ${b.fail_total} failed · <span class="ok-tag">${b.has_answer} with result</span> · <span class="crit-tag">${b.no_answer} without result</span></div>`;
-      } else if (b && b.type === 'stock') {
-        breakdownHtml = `<div class="tool-breakdown"><span class="ok-tag">${b.branch_stock} branch-store</span> · <span class="mint-tag">${b.online_stock} online</span> stock checks</div>`;
-      }
       card.innerHTML = `
         <div class="tool-info">
           <div class="tool-name">${tool.name}</div>
           <div class="tool-vol">${tool.vol.toLocaleString()} traces · ${tool.share}%</div>
-          ${breakdownHtml}
+          ${tool.breakdown ? `<div class="tool-breakdown">${tool.breakdown}</div>` : ''}
         </div>
         <div class="tool-stats">
           <div class="tool-stat"><div class="lbl">Fail</div><div class="val ${failColorClass}">${tool.fail}<span style="font-size:13px;">%</span></div></div>
