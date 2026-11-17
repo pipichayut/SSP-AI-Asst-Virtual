@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Virtual AI Assistant · Board performance brief</title>
+<title>Virtual AI Assistant · Board performance brief · V12</title>
 <style>
 :root {
   color-scheme: light;
@@ -284,6 +284,19 @@ footer { margin-top: 18px; display: flex; justify-content: space-between; flex-w
 .quotes-title { font-size: 14px; font-weight: 650; margin: 18px 0 0; }
 .chip.warn .live-dot { background: var(--warning); }
 
+/* review and export */
+.btn-export { display: inline-flex; align-items: center; gap: 6px; }
+.btn-export svg { width: 14px; height: 14px; }
+.btn-primary { background: var(--s1); border-color: var(--s1); color: #fff; }
+.btn-primary:hover { background: #1f66bd; border-color: #1f66bd; }
+.btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+.export-inline { margin-top: 12px; }
+.review-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-bottom: 14px; }
+.check { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); cursor: pointer; }
+.export-status { font-size: 12px; color: var(--ink-3); }
+.reviewtbl td.teach { color: var(--ink-2); font-size: 13px; max-width: 420px; }
+@media print { .review-bar, .export-inline, .reviewtbl th:last-child, .reviewtbl td:last-child { display: none; } }
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 </head>
@@ -304,7 +317,7 @@ footer { margin-top: 18px; display: flex; justify-content: space-between; flex-w
       <span class="chip">Operations <b>{{ops_from}} to {{ops_to}}</b> ({{ops_days}} days)</span>
       <span class="chip">Customer ratings <b>{{fb_from}} to {{fb_to}}</b> ({{fb_n}} ratings)</span>
       <span class="chip">Bangkok time</span>
-      <span class="chip live{{live_cls}}"><i class="live-dot"></i>{{live_label}} · loaded <b>{{loaded_at}}</b></span>
+      {{data_chip}}
     </div>
   </header>
 
@@ -445,6 +458,7 @@ footer { margin-top: 18px; display: flex; justify-content: space-between; flex-w
         <div class="legend"><span><i class="key key-s1"></i>Helpful</span><span><i class="key key-s2"></i>Not helpful</span></div>
         <div class="chart" id="chart-topics"></div>
         {{tbl_topics}}
+        <div class="export-inline"><button class="btn btn-export" type="button" data-export="all"{{export_disabled}}><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m0 0l-3-3m3 3l3-3M3 12.5h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Export questions and answers to Excel</button></div>
       </div>
       <div class="card">
         <h3>Why customers said Not helpful</h3>
@@ -455,6 +469,27 @@ footer { margin-top: 18px; display: flex; justify-content: space-between; flex-w
     </div>
     <h3 class="quotes-title">Latest customer comments</h3>
     <div class="quotes">{{quotes}}</div>
+  </section>
+
+  <section id="review">
+    <div class="sec-head">
+      <h2>Review the answers and teach the AI</h2>
+      <p>{{review_lede}}</p>
+    </div>
+    <div class="card">
+      <div class="review-bar">
+        <button class="btn btn-export btn-primary" type="button" data-export="all"{{export_disabled}}><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m0 0l-3-3m3 3l3-3M3 12.5h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Export all topics to Excel</button>
+        <label class="check"><input type="checkbox" id="export-nh-only"{{export_disabled}}> Not helpful answers only</label>
+        <span class="export-status" id="export-status" role="status" aria-live="polite">{{export_note}}</span>
+      </div>
+      <div class="table-wrap">
+        <table class="cap reviewtbl">
+          <thead><tr><th>Topic</th><th class="num">Ratings</th><th class="num">Not helpful</th><th>Main reason</th><th>What to teach the AI</th><th>Export</th></tr></thead>
+          <tbody><!--{{review_rows}}--></tbody>
+        </table>
+      </div>
+      <p class="note" style="margin:10px 0 0">The Excel file lists every rated question with the AI's answer, the customer's comment and a suggested lesson, plus an empty column for the team to write the <b>expected answer</b>. Emails, phone numbers and order numbers are hidden. Topics and reasons for new ratings come from keyword rules, so check them while reviewing.</p>
+    </div>
   </section>
 
   <section id="capabilities">
@@ -538,7 +573,7 @@ footer { margin-top: 18px; display: flex; justify-content: space-between; flex-w
     <div class="sec-head"><h2>Notes and definitions</h2></div>
     <div class="notes">
       <ul>
-        <li><b>Sources.</b> Part 1 reads the chat log (Sheet 1) live from the published Google Sheet: now {{questions}} answered questions in {{chats}} chats, {{ops_from}} to {{ops_to}}. Part 2 {{fb_source_note}}: now {{fb_n}} customer ratings in {{fb_chats}} chats, {{fb_from}} to {{fb_to}}. Part 3 mixes both. All times are Bangkok time.</li>
+        <li><b>Sources.</b> Part 1 {{s1_source}}: {{now}}{{questions}} answered questions in {{chats}} chats, {{ops_from}} to {{ops_to}}. Part 2 {{fb_source_note}}: {{now}}{{fb_n}} customer ratings in {{fb_chats}} chats, {{fb_from}} to {{fb_to}}. Part 3 mixes both. All times are Bangkok time.</li>
         <li><b>Questions answered</b> are rows in Sheet 1 (one customer question and the assistant's answer). <b>Chats</b> are distinct session IDs.</li>
         <li><b>Technical failure</b> uses V10's rule: a tool error or raw tool data reached the customer, or a product search gave no reply. One change: the refund tool's ready-made replies, passed on word for word, are complete answers and are not counted ({{refund_flagged}} since the tool started on {{refund_day}}). Counting those replies as failures, the rate would be {{fail_v10}} overall and {{fail_v10_l28}} in the last 4 weeks.</li>
         <li><b>Helpful rate</b> is Helpful ratings divided by all ratings. With {{fb_n}} ratings the true rate could be anywhere from {{ci_lo}} to {{ci_hi}}. About {{coverage}} of answers get a rating, roughly 1 in {{one_in}} (estimate: {{coverage_basis}}). {{coding_note}}</li>
@@ -548,7 +583,7 @@ footer { margin-top: 18px; display: flex; justify-content: space-between; flex-w
         <li><b>Weeks</b> run {{week_span}} and end on the latest day in the sheet ({{ops_to}}){{partial_note}}. "Last 4 weeks" is {{l28_from}} to {{l28_to}}, compared with the 28 days before.</li>
       </ul>
     </div>
-    <footer><span>Source: Google Sheet, Sheet 1 chat log and Sheet 2 customer ratings (live)</span><span>Board brief V11 · replaces the V10 executive brief</span></footer>
+    <footer><span>{{footer_src}}</span><span>Board brief V12 · replaces V11</span></footer>
   </section>
 
 </template>
@@ -856,6 +891,7 @@ function computeOps(R) {
 
   return {
     window: { first: first, last: last, total_days: total_days, l28: l28, p28: p28 }, labelled: labelled,
+    day_counts: (function () { var o = {}; dayKeys.forEach(function (d) { o[d] = perDay[d][0]; }); return o; })(),
     overall: overall, last28: last28, prev28: prev28, weeks: weeks, caps: caps, tools: tools, gaps: gaps,
     html_incident: { count: h.length, from: h[0] || null, to: h[h.length - 1] || null },
     refund_first_day: refundDays[0] || null,
@@ -996,7 +1032,8 @@ function normalizeRatings(raw, handCodes) {
       lang: langOf(q), topic: topic, topic_label: TOPIC_LABEL[topic],
       cause: helpful ? '' : (hc ? hc.cause : causeRule(topic, q, a, c)),
       comment_type: hc ? hc.comment_type : ctypeRule(c, helpful),
-      comment: redact(c), comment_en: hc ? hc.comment_en : '', coded: !!hc
+      comment: redact(c), comment_en: hc ? hc.comment_en : '', coded: !!hc,
+      question: redact(q).slice(0, 32000), answer: redact(a).slice(0, 32000)
     });
   });
   return out;
@@ -1482,6 +1519,7 @@ window.V11Init = function (V11DATA) {
 // PAGE: load Sheet 1 live, compute, fill the template, draw the charts.
 // ============================================================
 
+var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
 (function () {
   'use strict';
   var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -1530,6 +1568,19 @@ window.V11Init = function (V11DATA) {
     duplicates: 'The same item was listed several times.',
     handoff: 'Customers who asked for a person had no way to reach one.'
   };
+  // the lesson to teach the AI for each reason a customer said Not helpful
+  var TEACH = {
+    promo: 'Look up live promotions and give the actual code and its conditions. If there is none, say so plainly and suggest the nearest offer. Do not reply with the free-shipping line alone.',
+    size: 'Repeat the size, gender and type the customer asked for, and list only products available in that size. If none, say so and suggest the closest match.',
+    order_eta: 'After the order status, give the expected ship or delivery date and the tracking link. If the date is unknown, give the usual time frame and how to check.',
+    misread: 'Answer the exact question first. If the question is unclear, ask one short question to clarify before answering.',
+    not_found: 'When nothing matches, say so and offer two or three close alternatives or a link to the category.',
+    branch_stock: 'Explain how to check stock at a named branch, or check it, instead of guessing availability.',
+    duplicates: 'List each product once and group its sizes and colours under one item.',
+    handoff: 'When the customer asks for a person or seems stuck, give the contact channels (LINE, email, chat hours) straight away.'
+  };
+  var TEACH_OK = 'Answers worked: keep them as good examples.';
+  function countDays(ops, a, b) { var n = 0; for (var d in ops.day_counts) if (d >= a && d <= b) n += ops.day_counts[d]; return n; }
   function computeFeedback(ops, fb, source) {
     fb = fb.slice().sort(function (a, b) { return a.when < b.when ? -1 : 1; });
     var n = fb.length;
@@ -1554,10 +1605,10 @@ window.V11Init = function (V11DATA) {
     var wEnd = addDays(dates[0], 6), rated = fb.filter(function (r) { return r.date <= wEnd; }).length;
     var answers, basis;
     if (ops.window.last >= wEnd && ops.window.first <= dates[0]) {
-      answers = ops.records.filter(function (r) { return r.date >= dates[0] && r.date <= wEnd; }).length;
+      answers = countDays(ops, dates[0], wEnd);
       basis = 'first week of ratings against answers on the same days';
     } else {
-      answers = ops.records.filter(function (r) { return r.date >= addDays(ops.window.last, -6); }).length;
+      answers = countDays(ops, addDays(ops.window.last, -6), ops.window.last);
       basis = 'first week of ratings against the latest week of answers in Sheet 1';
     }
     return {
@@ -1794,11 +1845,14 @@ window.V11Init = function (V11DATA) {
     V.rate = p0(F.rate); V.helpful = F.helpful; V.nh_total = F.nh; V.ci_lo = p0(F.ci_lo); V.ci_hi = p0(F.ci_hi);
     V.ci_note = F.n < 200 ? ': still a small sample' : '';
     V.coverage = F.coverage != null ? p1(F.coverage) : 'n/a'; V.one_in = F.one_in || 'n/a'; V.coverage_basis = F.coverage_basis;
-    var live = F.source === 'live';
-    V.fb_source = live ? 'read live from Sheet 2' : 'stored copy: Sheet 2 could not be read just now';
-    V.fb_source_note = live ? 'reads the customer ratings (Sheet 2) live from the same Google Sheet, refreshed together with Sheet 1 on every page load' : 'could not read Sheet 2 just now, so it shows the stored copy of the first ratings';
-    V.live_label = live ? 'Live from Google Sheets (Sheets 1 and 2)' : 'Live from Google Sheets (Sheet 1 only; ratings from the stored copy)';
-    V.live_cls = live ? '' : ' warn';
+    var live = F.source === 'live', file = F.source === 'file';
+    V.fb_source = file ? 'Sheet 2 of ' + FILE_NAME : live ? 'read live from Sheet 2' : 'stored copy: Sheet 2 could not be read just now';
+    V.fb_source_note = file ? 'uses the customer ratings in Sheet 2 of the same workbook' : live ? 'reads the customer ratings (Sheet 2) live from the same Google Sheet, refreshed together with Sheet 1 on every page load' : 'could not read Sheet 2 just now, so it shows the stored copy of the first ratings';
+    V.now = file ? '' : 'now ';
+    V.s1_source = file ? 'uses the chat log in Sheet 1 of ' + FILE_NAME : 'reads the chat log (Sheet 1) live from the published Google Sheet';
+    V.footer_src = file ? 'Source: ' + FILE_NAME + ', Sheets 1 and 2' : 'Source: Google Sheet, Sheet 1 chat log and Sheet 2 customer ratings (live)';
+    H.data_chip = file ? '<span class="chip">Data: ' + esc(FILE_NAME) + '</span>' :
+      '<span class="chip live' + (live ? '' : ' warn') + '"><i class="live-dot"></i>' + (live ? 'Live from Google Sheets (Sheets 1 and 2)' : 'Live from Google Sheets (Sheet 1 only; ratings from the stored copy)') + ' · loaded <b>' + esc(loadedAt) + '</b></span>';
     var top2 = F.causeKeys.slice(0, 2), top2n = top2.reduce(function (t, k) { return t + F.cc[k]; }, 0);
     var share = F.nh ? top2n / F.nh : 0;
     var shareWord = share >= 0.45 && share <= 0.55 ? 'half' : share > 0.55 ? 'most' : top2n + ' of ' + F.nh;
@@ -1840,6 +1894,27 @@ window.V11Init = function (V11DATA) {
     V.area_lede = 'How customers rated each area, ' + V.fb_from + ' to ' + V.fb_to + '. ' +
       (actAreas.length ? (function (x) { var t = x.length > 1 ? x.slice(0, -1).join(', ') + ' and ' + x[x.length - 1] : x[0]; return t.charAt(0).toUpperCase() + t.slice(1); })(actAreas) + (actAreas.length > 1 ? ' need' : ' needs') + ' action.' : 'No area is below 45% helpful with 10 or more ratings.');
     V.coding_note = F.coded === F.n ? 'Topics and reasons for every rating were coded by hand.' : 'Topics and reasons for ' + (F.coded ? 'the first ' + F.coded + ' ratings were coded by hand; the other ' + (F.n - F.coded) + ' are coded automatically by keyword rules on the question, answer and comment, so read their split as indicative' : 'every rating are coded automatically by keyword rules on the question, answer and comment, so read the split as indicative') + '.';
+
+    // review and export section
+    var canExport = (live || file) && F.list.some(function (r) { return r.question || r.answer; });
+    V.export_disabled = canExport ? '' : ' disabled';
+    V.export_note = canExport ? '' : 'Export needs Sheet 2 to load live (the stored copy has no question or answer text).';
+    var worstT = F.topics[0];
+    V.review_lede = 'Use the topics with the most Not helpful ratings to decide what to teach the AI next' +
+      (worstT && worstT.not_helpful ? ' (now ' + worstT.label + ': ' + worstT.not_helpful + ' of ' + worstT.ratings + ' Not helpful)' : '') +
+      '. Export the questions and answers to Excel, write the expected answer, and use it to update the AI\'s knowledge and instructions.';
+    H.review_rows = F.topics.map(function (t) {
+      var rows = F.list.filter(function (r) { return r.topic_label === t.label; });
+      var c = {}; rows.forEach(function (r) { if (!r.helpful) c[r.cause] = (c[r.cause] || 0) + 1; });
+      var top = Object.keys(c).sort(function (x, y) { return c[y] - c[x]; })[0];
+      return '<tr><td class="cap-first"><div class="cap-name">' + esc(t.label) + '</div><div class="cap-sub">' + p0(t.rate) + ' helpful</div></td>' +
+        '<td class="num" data-label="Ratings"><span class="cv">' + t.ratings + '</span></td>' +
+        '<td class="num" data-label="Not helpful"><span class="cv">' + t.not_helpful + '</span></td>' +
+        '<td data-label="Main reason"><span class="cv">' + esc(top ? SHORT[top] + ' (' + c[top] + ')' : 'None') + '</span></td>' +
+        '<td class="teach" data-label="What to teach the AI"><span class="cv">' + esc(top ? TEACH[top] : TEACH_OK) + '</span></td>' +
+        '<td data-label="Export"><span class="cv"><button class="btn btn-export" type="button" data-export="' + esc(t.label) + '"' + V.export_disabled + '>Excel</button></span></td></tr>';
+    }).join('');
+    window.V11_RATINGS = { list: F.list, topics: F.topics.map(function (t) { return t.label; }), SHORT: SHORT, TEACH: TEACH, TEACH_OK: TEACH_OK, from: F.from, to: F.to };
 
     // part 3: priorities
     var pf = C.promo.fail_l28, pp = C.promo.fail_p28;
@@ -1955,7 +2030,187 @@ window.V11Init = function (V11DATA) {
     }).catch(function (e) { return stored(e.message); });
   }
 
-  Promise.all([load(), loadRatings()]).then(function (x) { render(x[0], x[1]); }).catch(fail);
+  if (window.V12_EMBED) {
+    // file version: figures were worked out from the uploaded workbook and stored in this page
+    try { render(window.V12_EMBED.ops, { list: window.V12_EMBED.ratings, source: 'file' }); } catch (e) { fail(e); }
+  } else {
+    Promise.all([load(), loadRatings()]).then(function (x) { render(x[0], x[1]); }).catch(fail);
+  }
+})();
+
+// ============================================================
+// EXCEL EXPORT: rated questions and answers for the team to review,
+// with columns to write the expected answer. ExcelJS loads only when
+// someone clicks an export button.
+// ============================================================
+(function () {
+  'use strict';
+  var EXCELJS_URLS = [
+    'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js',
+    'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js'
+  ];
+  var loading = null;
+
+  function loadScript(i) {
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = EXCELJS_URLS[i]; s.async = true;
+      s.onload = function () { window.ExcelJS ? resolve() : reject(new Error('ExcelJS missing')); };
+      s.onerror = function () { s.remove(); reject(new Error('could not load ' + EXCELJS_URLS[i])); };
+      document.head.appendChild(s);
+    });
+  }
+  function loadExcelJS() {
+    if (window.ExcelJS) return Promise.resolve();
+    if (!loading) {
+      loading = loadScript(0).catch(function () { return loadScript(1); });
+      loading.catch(function () { loading = null; });
+    }
+    return loading;
+  }
+  function setStatus(t) { var el = document.getElementById('export-status'); if (el) el.textContent = t; }
+
+  var HEAD_FILL = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F2A37' } };
+  var FILL_TEAM = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF6D6' } };
+  var FILL_TEAM_HEAD = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFB7791F' } };
+  var BORDER = { top: { style: 'thin', color: { argb: 'FFE1E0D9' } }, bottom: { style: 'thin', color: { argb: 'FFE1E0D9' } }, left: { style: 'thin', color: { argb: 'FFE1E0D9' } }, right: { style: 'thin', color: { argb: 'FFE1E0D9' } } };
+  function styleHead(row, teamCols) {
+    row.height = 30;
+    row.eachCell(function (c, n) {
+      c.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      c.fill = teamCols && teamCols.indexOf(n) !== -1 ? FILL_TEAM_HEAD : HEAD_FILL;
+      c.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+      c.border = BORDER;
+    });
+  }
+  // rough row height so long answers are readable without resizing
+  function fitHeight(row, widths) {
+    var lines = 1;
+    row.eachCell(function (c, n) {
+      var v = c.value == null ? '' : String(c.value), w = widths[n - 1] || 12;
+      var l = v.split('\n').reduce(function (t, p) { return t + Math.max(1, Math.ceil(p.length / (w * 1.1))); }, 0);
+      if (l > lines) lines = l;
+    });
+    row.height = Math.min(409, Math.max(18, lines * 15));
+  }
+
+  function build(topic, nhOnly) {
+    var D = window.V11_RATINGS, order = D.topics;
+    var rows = D.list.filter(function (r) { return (topic === 'all' || r.topic_label === topic) && (!nhOnly || !r.helpful); });
+    rows.sort(function (a, b) {
+      var ta = order.indexOf(a.topic_label), tb = order.indexOf(b.topic_label);
+      if (ta !== tb) return ta - tb;
+      if (a.helpful !== b.helpful) return a.helpful - b.helpful;      // Not helpful first
+      return a.when < b.when ? 1 : -1;                                // newest first
+    });
+    var wb = new window.ExcelJS.Workbook();
+    wb.creator = 'Virtual AI Assistant dashboard'; wb.created = new Date();
+
+    // ---- sheet 1: review
+    var ws = wb.addWorksheet('Review', { views: [{ state: 'frozen', xSplit: 0, ySplit: 1 }],
+      pageSetup: { orientation: 'landscape', paperSize: 9, fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
+    ws.pageSetup.printTitlesRow = '1:1';
+    var cols = [
+      ['No.', 6], ['Date (Bangkok)', 16], ['Topic', 20], ['Rating', 12], ['Main reason', 22],
+      ['Customer question', 42], ['AI answer', 60], ['Customer comment', 30], ['What to teach the AI (suggested)', 42],
+      ['Expected answer (team)', 60],
+      ['Message ID', 14], ['Session ID', 18], ['Topic coded by', 14]
+    ];
+    var widths = cols.map(function (c) { return c[1]; });
+    ws.columns = cols.map(function (c) { return { header: c[0], width: c[1] }; });
+    styleHead(ws.getRow(1), [10]);
+    rows.forEach(function (r, i) {
+      var row = ws.addRow([
+        i + 1, r.when, r.topic_label, r.helpful ? 'Helpful' : 'Not helpful', r.helpful ? '' : (D.SHORT[r.cause] || 'Other'),
+        r.question || '', r.answer || '', r.comment_en && r.comment_en !== r.comment ? r.comment + '\n(English: ' + r.comment_en + ')' : (r.comment || ''),
+        r.helpful ? 'Answer worked: keep as a good example.' : (D.TEACH[r.cause] || ''),
+        '', r.id, r.session, r.coded ? 'Hand' : 'Rules'
+      ]);
+      row.eachCell({ includeEmpty: true }, function (c, n) {
+        c.alignment = { vertical: 'top', wrapText: true };
+        c.border = BORDER;
+        if (n === 10) c.fill = FILL_TEAM;
+      });
+      row.getCell(4).font = { bold: true, color: { argb: r.helpful ? 'FF1D5FAE' : 'FFC0392B' } };
+      fitHeight(row, widths.map(function (w, k) { return k === 9 ? 200 : w; }));
+    });
+    ws.autoFilter = { from: { row: 1, column: 1 }, to: { row: Math.max(1, rows.length + 1), column: cols.length } };
+
+    // ---- sheet 2: topic summary
+    var ts = wb.addWorksheet('Topic summary', { views: [{ state: 'frozen', ySplit: 1 }] });
+    ts.columns = [
+      { header: 'Topic', width: 24 }, { header: 'Ratings', width: 10 }, { header: 'Helpful', width: 10 }, { header: 'Not helpful', width: 12 },
+      { header: 'Helpful rate', width: 12 }, { header: 'Main reason', width: 30 }, { header: 'What to teach the AI', width: 70 }
+    ];
+    styleHead(ts.getRow(1));
+    order.filter(function (t) { return topic === 'all' || t === topic; }).forEach(function (t) {
+      var x = D.list.filter(function (r) { return r.topic_label === t; });
+      var h = x.filter(function (r) { return r.helpful; }).length, c = {};
+      x.forEach(function (r) { if (!r.helpful) c[r.cause] = (c[r.cause] || 0) + 1; });
+      var top = Object.keys(c).sort(function (a, b) { return c[b] - c[a]; })[0];
+      var row = ts.addRow([t, x.length, h, x.length - h, x.length ? h / x.length : 0, top ? D.SHORT[top] + ' (' + c[top] + ')' : 'None', top ? D.TEACH[top] : D.TEACH_OK]);
+      row.getCell(5).numFmt = '0%';
+      row.eachCell(function (cell) { cell.alignment = { vertical: 'top', wrapText: true }; cell.border = BORDER; });
+      fitHeight(row, [24, 10, 10, 12, 12, 30, 70]);
+    });
+
+    // ---- sheet 3: how to use
+    var hs = wb.addWorksheet('How to use');
+    hs.getColumn(1).width = 110;
+    [
+      ['How to use this file', true],
+      ['Exported ' + new Date().toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) + ' from the Virtual AI Assistant dashboard. Ratings from ' + D.from + ' to ' + D.to + ' (Bangkok time). ' + rows.length + ' answers' + (topic === 'all' ? ', all topics' : ', topic: ' + topic) + (nhOnly ? ', Not helpful only.' : '.'), false],
+      ['', false],
+      ['1. Work through the Review sheet topic by topic. Topics with the most Not helpful ratings come first, and within each topic Not helpful answers come before Helpful ones.', false],
+      ['2. Read the customer question and the AI answer, then write the answer the AI should have given in "Expected answer (team)". Use the suggested lesson as a starting point.', false],
+      ['3. The yellow column is for the team; the rest come from the dashboard.', false],
+      ['4. Helpful answers are good examples: keep them as reference answers when you update the AI.', false],
+      ['', false],
+      ['Notes', true],
+      ['Main reason and topic: the first ratings were coded by hand ("Hand" in the last column); newer ones are coded by keyword rules ("Rules"), so correct them if they look wrong.', false],
+      ['Emails, phone numbers, order numbers and tracking numbers are hidden as [email], [phone], [order no.] and [tracking no.].', false],
+      ['A fresh export always reflects the latest ratings in Sheet 2. Keep your reviewed copy separately, or paste new rows into it.', false]
+    ].forEach(function (x) {
+      var row = hs.addRow([x[0]]);
+      row.getCell(1).alignment = { wrapText: true, vertical: 'top' };
+      if (x[1]) row.getCell(1).font = { bold: true, size: 13 };
+      fitHeight(row, [110]);
+    });
+    return { wb: wb, n: rows.length };
+  }
+
+  function slug(t) { return t === 'all' ? 'all_topics' : t.replace(/&/g, 'and').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, ''); }
+
+  function exportReview(topic) {
+    if (!window.V11_RATINGS) return;
+    var nhBox = document.getElementById('export-nh-only'), nhOnly = !!(nhBox && nhBox.checked);
+    setStatus('Preparing the Excel file...');
+    return loadExcelJS().then(function () {
+      var b = build(topic, nhOnly);
+      if (!b.n) { setStatus('No answers match this choice.'); return; }
+      return b.wb.xlsx.writeBuffer().then(function (buf) {
+        var blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'AI_answer_review_' + slug(topic) + (nhOnly ? '_not_helpful' : '') + '_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+        setStatus('Downloaded ' + b.n + ' answers' + (topic === 'all' ? '' : ' for ' + topic) + '.');
+      });
+    }).catch(function (e) {
+      setStatus('Could not create the Excel file: ' + (e && e.message ? e.message : e) + '. Check the internet connection and try again.');
+      if (window.console) console.error(e);
+    });
+  }
+  window.V11ExportReview = exportReview;
+
+  document.addEventListener('click', function (ev) {
+    var btn = ev.target.closest && ev.target.closest('[data-export]');
+    if (!btn || btn.disabled) return;
+    ev.preventDefault();
+    btn.disabled = true;
+    Promise.resolve(exportReview(btn.getAttribute('data-export'))).then(function () { btn.disabled = false; });
+  });
 })();
 
 </script>
