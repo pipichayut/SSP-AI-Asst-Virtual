@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Virtual AI Assistant · Board performance brief · V12</title>
+<title>Virtual AI Assistant · Board performance brief · V13</title>
 <style>
 :root {
   color-scheme: light;
@@ -311,6 +311,12 @@ footer { margin-top: 18px; display: flex; justify-content: space-between; flex-w
 
 [hidden] { display: none !important; }
 
+/* customer ratings in tool health */
+.rate-h { color: #1d5fae; font-weight: 650; }
+.rate-nh { color: #b8481a; font-weight: 650; }
+.rate-nh.zero { color: var(--ink-3); font-weight: 400; }
+.muted { color: var(--ink-3); }
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 </head>
@@ -425,13 +431,14 @@ footer { margin-top: 18px; display: flex; justify-content: space-between; flex-w
     </div>
     <div class="card" data-tf-panel="all"{{tf_all_hidden}}>
       <p class="tf-sum"><b>{{ops_from}} to {{ops_to}}</b> · {{tool_sum_all}}</p>
-      <div class="table-wrap"><table class="cap tooltbl"><thead><tr><th>Tool</th><th class="num">Questions</th><th class="num">Share of questions</th><th class="num">Avg response</th><th class="num">Technical failures</th><th>Status</th><th>What to notice</th></tr></thead><tbody><!--{{tool_rows_all}}--></tbody></table></div>
+      <div class="table-wrap"><table class="cap tooltbl"><thead><tr><th>Tool</th><th class="num">Questions</th><th class="num">Share of questions</th><th class="num">Avg response</th><th class="num">Technical failures</th><th class="num">Helpful</th><th class="num">Not helpful</th><th>Status</th><th>What to notice</th></tr></thead><tbody><!--{{tool_rows_all}}--></tbody></table></div>
     </div>
     <div class="card" data-tf-panel="l28"{{tf_l28_hidden}}>
       <p class="tf-sum"><b>{{l28_from}} to {{l28_to}}</b> · {{tool_sum_l28}} Changes compare with {{prev_txt}} ({{p28_from}} to {{p28_to}}).</p>
-      <div class="table-wrap"><table class="cap tooltbl"><thead><tr><th>Tool</th><th class="num">Questions</th><th class="num">Share of questions</th><th class="num">Avg response</th><th class="num">Technical failures</th><th>Status</th><th>What to notice</th></tr></thead><tbody><!--{{tool_rows_l28}}--></tbody></table></div>
+      <div class="table-wrap"><table class="cap tooltbl"><thead><tr><th>Tool</th><th class="num">Questions</th><th class="num">Share of questions</th><th class="num">Avg response</th><th class="num">Technical failures</th><th class="num">Helpful</th><th class="num">Not helpful</th><th>Status</th><th>What to notice</th></tr></thead><tbody><!--{{tool_rows_l28}}--></tbody></table></div>
     </div>
-    <p class="foot">Status follows V10's thresholds for the chosen time frame: Act now at 40% failures or more, Watch at 10% or more, Good below that, Idle under 30 uses. Response times leave out days when they were not recorded.</p>
+    <p class="foot">{{tool_ratings_note}}</p>
+    <p class="foot">Answers given without any tool (greetings, thanks and other small talk) are left out of this table; shares are of all questions. Status follows V10's thresholds for the chosen time frame: Act now at 40% failures or more, Watch at 10% or more, Good below that, Idle under 30 uses. Response times leave out days when they were not recorded.</p>
   </section>
 
   <section id="missed">
@@ -608,7 +615,7 @@ footer { margin-top: 18px; display: flex; justify-content: space-between; flex-w
         <li><b>Weeks</b> run {{week_span}} and end on the latest day in the sheet ({{ops_to}}){{partial_note}}. {{cmp_note}}</li>
       </ul>
     </div>
-    <footer><span>{{footer_src}}</span><span>Board brief V12 · replaces V11</span></footer>
+    <footer><span>{{footer_src}}</span><span>Board brief V13 · replaces V12</span></footer>
   </section>
 
 </template>
@@ -777,7 +784,8 @@ function makeRecord(r) {
     f10: f10, f: tool === 'refund_return' ? isFailed(r) : f10, zero: zero,
     product: CONFIG.PRODUCT_SEARCH_TOOLS.indexOf(tool) !== -1,
     html: tool === 'order_status' && f10 && String(r['Agent Response'] || '').indexOf('order-outer-html') !== -1,
-    sid: String(r['Session ID'] || '').trim()
+    sid: String(r['Session ID'] || '').trim(),
+    trace: String(r['Trace ID'] || '').trim()
   };
   if (zero) {
     var q = String(r['Question'] || ''), ti = String(r['Tool Input'] || '');
@@ -999,6 +1007,17 @@ function topicRule(q, a, c) {
   if ((RX.chat.test(q) && bare.length < 25) || bare.length < 6) return 'chat';
   return 'product';
 }
+// Which tool most likely produced a rated answer, when the rating cannot be matched to Sheet 1 by trace ID
+function toolRule(topic, q, a) {
+  if (topic === 'order') return 'order_status';
+  if (topic === 'promo') return 'check_promotions';
+  if (topic === 'chat') return '(direct response)';
+  if (topic === 'policy') return /refund|return|exchange|คืนเงิน|คืนสินค้า|เปลี่ยนสินค้า|เปลี่ยนไซ|ขอคืน|ขอเปลี่ยน/i.test(q) ? 'refund_return' : 'faq_helpdesk';
+  if (topic === 'store') return 'faq_helpdesk';
+  if (/compare|comparison|\bvs\.?\b|versus|เปรียบเทียบ|ต่างกัน|ดีกว่า|อันไหนดี|รุ่นไหนดี/i.test(q)) return 'product_comparison';
+  if (/how to choose|guide|size chart|ตารางไซส์|ตารางขนาด|วิธีเลือก|เลือกยังไง|ควรเลือก|วัดเท้า|วัดไซส์/i.test(q)) return 'product_guide';
+  return 'product_recommendation';
+}
 function hasDuplicates(a) {
   var seen = {}, dup = false;  // the same product line listed 3 times or more
   String(a || '').split('\n').forEach(function (l) {
@@ -1070,7 +1089,8 @@ function normalizeRatings(raw, handCodes) {
       cause: helpful ? '' : (hc ? hc.cause : causeRule(topic, q, a, c)),
       comment_type: hc ? hc.comment_type : ctypeRule(c, helpful),
       comment: redact(c), comment_en: hc ? hc.comment_en : '', coded: !!hc,
-      question: redact(q).slice(0, 32000), answer: redact(a).slice(0, 32000)
+      question: redact(q).slice(0, 32000), answer: redact(a).slice(0, 32000),
+      trace: get(r, ['Langfuse trace ID', 'Trace ID']).trim(), tool_guess: toolRule(topic, q, a)
     });
   });
   return out;
@@ -1773,9 +1793,17 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
     else ch = '<span class="small-down">down from ' + p1(fp) + '</span>';
     return '<span class="cv">' + p1(f) + ch + '</span>';
   }
-  function toolRows(ops, view) {
+  // customer ratings per tool: matched by trace ID where Sheet 1 has the answer, otherwise by the question's topic
+  function ratingsByTool(F) {
+    var o = {};
+    F.list.forEach(function (r) { var k = r.tool; var x = o[k] = o[k] || { h: 0, nh: 0 }; if (r.helpful) x.h++; else x.nh++; });
+    return o;
+  }
+  function toolRows(ops, view, F) {
     var notes = view === 'all' ? notesAll(ops) : notesL28(ops), counts = { good: 0, watch: 0, act: 0, idle: 0 };
-    var html = ops.tools.map(function (t) {
+    var RT = ratingsByTool(F);
+    var shownTools = ops.tools.filter(function (t) { return t.name !== '(direct response)'; });
+    var html = shownTools.map(function (t) {
       var nm = TOOL_NAMES[t.name] || [t.name, t.name];
       var vol, share, lat, f, fc;
       if (view === 'all') { vol = t.vol; share = t.share; lat = t.latency; f = t.fail; fc = '<span class="cv">' + p1(f) + '</span>'; }
@@ -1784,16 +1812,23 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
         fc = vol ? failCell(f, t.fail_p28) : '<span class="cv">no use</span>';
       }
       var st = toolStatus(vol, f || 0); counts[st]++;
+      var rt = RT[t.name], rtot = rt ? rt.h + rt.nh : 0;
+      var rh = rt ? '<span class="rate-h">' + rt.h + '</span>' : '<span class="muted">none</span>';
+      var rn = rt ? '<span class="rate-nh' + (rt.nh ? '' : ' zero') + '">' + rt.nh + '</span>' + (rtot ? '<span class="small-flat">' + p0(rt.h / rtot) + ' helpful</span>' : '') : '<span class="muted">none</span>';
+      var note = notes[t.name] || '';
+      if (rtot >= 5 && rt.h / rtot < 0.45) note = (note ? note + ' ' : '') + 'Customers rated only ' + rt.h + ' of ' + rtot + ' answers helpful.';
       var lc = lat == null ? '<span class="cv">no use</span>' : '<span class="cv">' + s1(lat) + (lat > TARGET ? '<span class="small-up">above ' + TARGET + 's target</span>' : '') + '</span>';
       return '<tr><td class="cap-first"><div class="cap-name">' + esc(nm[0]) + '</div><div class="cap-sub">' + esc(nm[1]) + '</div></td>' +
         '<td class="num" data-label="Questions"><span class="cv">' + (vol ? n0(vol) : 'none') + '</span></td>' +
         '<td class="num" data-label="Share of questions"><span class="cv">' + (vol ? shareTxt(share) : 'none') + '</span></td>' +
         '<td class="num" data-label="Avg response">' + lc + '</td>' +
         '<td class="num" data-label="Technical failures">' + fc + '</td>' +
+        '<td class="num" data-label="Helpful"><span class="cv">' + rh + '</span></td>' +
+        '<td class="num" data-label="Not helpful"><span class="cv">' + rn + '</span></td>' +
         '<td data-label="Status"><span class="cv">' + status(st) + '</span></td>' +
-        '<td class="cap-note" data-label="What to notice"><span class="cv">' + esc(notes[t.name] || '') + '</span></td></tr>';
+        '<td class="cap-note" data-label="What to notice"><span class="cv">' + esc(note) + '</span></td></tr>';
     }).join('');
-    var sum = ops.tools.length + ' tools: ' + counts.good + ' Good, ' + counts.watch + ' Watch, ' + counts.act + ' Act now, ' + counts.idle + ' Idle.';
+    var sum = shownTools.length + ' tools: ' + counts.good + ' Good, ' + counts.watch + ' Watch, ' + counts.act + ' Act now, ' + counts.idle + ' Idle.';
     return { html: html, sum: sum };
   }
 
@@ -1881,8 +1916,6 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
         parts.push('FAQ answers ' + (C.faq.latency_l28 > C.faq.latency_p28 ? 'slowed' : 'sped up') + ' from ' + s1(C.faq.latency_p28) + ' to ' + s1(C.faq.latency_l28));
       if (C.product.share_l28 != null && C.product.share_p28 != null && C.product.latency_l28 != null && Math.abs(C.product.share_l28 - C.product.share_p28) >= 0.01)
         parts.push('product search, guides and comparison together (' + s1(C.product.latency_l28) + ' on average) ' + (C.product.share_l28 > C.product.share_p28 ? 'grew' : 'fell') + ' from ' + p0(C.product.share_p28) + ' to ' + p0(C.product.share_l28) + ' of questions');
-      if (C.instant.share_l28 != null && C.instant.share_p28 != null && Math.abs(C.instant.share_l28 - C.instant.share_p28) >= 0.01)
-        parts.push((C.instant.share_l28 < C.instant.share_p28 ? 'fewer' : 'more') + ' questions got an instant reply (' + p0(C.instant.share_l28) + ', ' + (C.instant.share_l28 < C.instant.share_p28 ? 'down' : 'up') + ' from ' + p0(C.instant.share_p28) + ')');
       if (parts.length) { var joined = parts.length > 1 ? parts.slice(0, -1).join(', ') + ', and ' + parts[parts.length - 1] : parts[0]; why += ' ' + joined.charAt(0).toUpperCase() + joined.slice(1) + '.'; }
     } else why = 'Response times need two 4-week periods to compare.';
     var h = ops.html_incident;
@@ -1893,7 +1926,17 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
     }));
 
     // tools
-    var ta = toolRows(ops, 'all'), tl = toolRows(ops, 'l28');
+    var ta = toolRows(ops, 'all', F), tl = toolRows(ops, 'l28', F);
+    var exact = F.list.filter(function (r) { return r.tool_how === 'trace'; }).length;
+    var shown = {}; ops.tools.forEach(function (t) { if (t.name !== '(direct response)') shown[t.name] = 1; });
+    var chatN = F.list.filter(function (r) { return r.tool === '(direct response)'; }).length;
+    var off = F.list.filter(function (r) { return !shown[r.tool] && r.tool !== '(direct response)'; }).length;
+    V.tool_ratings_note = 'Helpful and Not helpful are customer ratings from Sheet 2 (' + range(F.from, F.to) + ', ' + F.n + ' ratings; the same ratings in both views). ' +
+      (exact === F.n ? 'Every rating was matched to its answer in Sheet 1 by trace ID.' :
+        (exact ? exact + ' were matched to their answer in Sheet 1 by trace ID; the other ' + (F.n - exact) : 'Ratings and Sheet 1 do not overlap yet, so all ' + F.n) +
+        ' are placed by the topic of the question; treat the split between the product tools as a best guess.') +
+      (chatN ? ' ' + chatN + ' rating' + (chatN > 1 ? 's' : '') + ' on small talk or asking for a person (no tool) ' + (chatN > 1 ? 'are' : 'is') + ' not shown.' : '') +
+      (off ? ' ' + off + ' rating' + (off > 1 ? 's' : '') + ' belong to tools not used in this timeframe and are not shown.' : '');
     H.tool_rows_all = ta.html; H.tool_rows_l28 = tl.html; V.tool_sum_all = ta.sum; V.tool_sum_l28 = tl.sum;
 
     // searches that found nothing
@@ -1939,7 +1982,6 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
       ['Promotions', 'check_promotions', ['Promotions & discounts'], 'Promotions'],
       ['Product search, guides & comparison', 'product_recommendation, product_guide, product_comparison', ['Product search & sizes'], 'product search'],
       ['Order tracking', 'order_status', ['Order tracking'], 'order tracking'],
-      ['Instant replies', 'no tool call', ['Chat & handoff'], 'instant replies'],
       ['FAQ, policies & store info', 'faq_helpdesk', ['Policies & payment', 'Stores, stock & pickup'], 'FAQ and policies']
     ];
     var actAreas = [];
@@ -2093,7 +2135,19 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
       rerender('#range-apply');
     }
   });
+  // match each rating to its answer in Sheet 1 by trace ID; fall back to the tool guessed from the topic
+  function linkRatings(records, list) {
+    var want = {}; list.forEach(function (r) { if (r.trace) want[r.trace] = 1; });
+    var found = {};
+    records.forEach(function (x) { if (x.trace && want[x.trace]) found[x.trace] = x.tool; });
+    list.forEach(function (r) {
+      if (r.trace && found[r.trace]) { r.tool = found[r.trace]; r.tool_how = 'trace'; }
+      else if (r.tool_exact) { r.tool = r.tool_exact; r.tool_how = 'trace'; }
+      else { r.tool = r.tool_guess || 'product_recommendation'; r.tool_how = 'topic'; }
+    });
+  }
   function start(records, rt) {
+    linkRatings(records, rt.list);
     STATE.records = records; STATE.ratings = rt.list; STATE.source = rt.source;
     STATE.loadedAt = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     render();
