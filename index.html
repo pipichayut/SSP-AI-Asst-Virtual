@@ -297,6 +297,20 @@ footer { margin-top: 18px; display: flex; justify-content: space-between; flex-w
 .reviewtbl td.teach { color: var(--ink-2); font-size: 13px; max-width: 420px; }
 @media print { .review-bar, .export-inline, .reviewtbl th:last-child, .reviewtbl td:last-child { display: none; } }
 
+/* timeframe filter */
+.filter-bar { position: sticky; top: 0; z-index: 20; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 18px 0 28px; padding: 12px 16px; background: rgba(252, 252, 251, 0.96); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 4px 16px rgba(11, 11, 11, 0.05); backdrop-filter: blur(6px); }
+.fb-label { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
+.range-tabs button { padding: 7px 14px; font-size: 13px; }
+.fb-custom { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); }
+.fb-custom label { display: inline-flex; align-items: center; gap: 6px; }
+.fb-custom input[type="date"] { font: inherit; font-size: 13px; color: var(--ink-1); padding: 5px 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+.fb-custom .btn { padding: 6px 14px; }
+.fb-note { flex-basis: 100%; margin: 0; font-size: 12px; color: var(--ink-3); }
+@media (max-width: 760px) { .filter-bar { position: static; } .range-tabs { flex-wrap: wrap; } }
+@media print { .filter-bar { position: static; box-shadow: none; } .range-tabs button:not([aria-pressed="true"]), .fb-custom { display: none; } }
+
+[hidden] { display: none !important; }
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 </head>
@@ -321,13 +335,24 @@ footer { margin-top: 18px; display: flex; justify-content: space-between; flex-w
     </div>
   </header>
 
+  <div class="filter-bar" id="filter-bar" role="group" aria-label="Timeframe filter">
+    <span class="fb-label">Timeframe</span>
+    <div class="tf range-tabs">{{range_tabs}}</div>
+    <div class="fb-custom">
+      <label>From <input type="date" id="range-from" value="{{range_from}}" min="{{range_min}}" max="{{range_max}}"></label>
+      <label>To <input type="date" id="range-to" value="{{range_to}}" min="{{range_min}}" max="{{range_max}}"></label>
+      <button class="btn" type="button" id="range-apply">Apply</button>
+    </div>
+    <p class="fb-note">{{range_note}}</p>
+  </div>
+
   <div class="part part1" id="part-ops">
     <div class="part-tag">Part 1</div>
     <div><h2 class="part-title">Operations: how the assistant runs</h2>
     <p class="part-sub">From the chat log of every question and answer · {{ops_from}} to {{ops_to}} ({{ops_days}} days) · {{questions}} questions in {{chats}} chats</p></div>
   </div>
   <section id="glance">
-    <div class="sec-head"><h2>At a glance</h2><span class="when">Totals since {{ops_from}} · changes compare the last 4 weeks ({{l28_from}} to {{l28_to}}) with the 4 weeks before</span></div>
+    <div class="sec-head"><h2>At a glance</h2><span class="when">{{glance_when}}</span></div>
     <div class="tiles">
       <div class="tile">
         <div class="tile-label">Chats</div>
@@ -353,7 +378,7 @@ footer { margin-top: 18px; display: flex; justify-content: space-between; flex-w
       <div class="tile">
         <div class="tile-label">Technical failure rate</div>
         <div class="tile-value">{{fail}}</div>
-        <div class="tile-note">{{failed}} answers since {{ops_from}}</div>
+        <div class="tile-note">{{failed}} answers {{since_txt}}</div>
         {{tiles_fail_delta}}
         <div class="spark" id="spark-fail"></div>
       </div>
@@ -392,18 +417,18 @@ footer { margin-top: 18px; display: flex; justify-content: space-between; flex-w
   <section id="tools">
     <div class="sec-head">
       <h2>Tool-level health</h2>
-      <div class="tf" role="group" aria-label="Time frame for tool-level health">
+      <div class="tf" role="group" aria-label="Time frame for tool-level health"{{tf_switch_hidden}}>
         <button type="button" data-tf="all" aria-pressed="true">All time</button>
         <button type="button" data-tf="l28" aria-pressed="false">Last 4 weeks</button>
       </div>
-      <p>The technical view of each tool. This switch changes only this section; how customers rate each area is in Customer rating by area, Part 2.</p>
+      <p>The technical view of each tool. {{tf_switch_txt}} how customers rate each area is in Customer rating by area, Part 2.</p>
     </div>
-    <div class="card" data-tf-panel="all">
+    <div class="card" data-tf-panel="all"{{tf_all_hidden}}>
       <p class="tf-sum"><b>{{ops_from}} to {{ops_to}}</b> · {{tool_sum_all}}</p>
       <div class="table-wrap"><table class="cap tooltbl"><thead><tr><th>Tool</th><th class="num">Questions</th><th class="num">Share of questions</th><th class="num">Avg response</th><th class="num">Technical failures</th><th>Status</th><th>What to notice</th></tr></thead><tbody><!--{{tool_rows_all}}--></tbody></table></div>
     </div>
-    <div class="card" data-tf-panel="l28" hidden>
-      <p class="tf-sum"><b>{{l28_from}} to {{l28_to}}</b> · {{tool_sum_l28}} Changes compare with the 4 weeks before.</p>
+    <div class="card" data-tf-panel="l28"{{tf_l28_hidden}}>
+      <p class="tf-sum"><b>{{l28_from}} to {{l28_to}}</b> · {{tool_sum_l28}} Changes compare with {{prev_txt}} ({{p28_from}} to {{p28_to}}).</p>
       <div class="table-wrap"><table class="cap tooltbl"><thead><tr><th>Tool</th><th class="num">Questions</th><th class="num">Share of questions</th><th class="num">Avg response</th><th class="num">Technical failures</th><th>Status</th><th>What to notice</th></tr></thead><tbody><!--{{tool_rows_l28}}--></tbody></table></div>
     </div>
     <p class="foot">Status follows V10's thresholds for the chosen time frame: Act now at 40% failures or more, Watch at 10% or more, Good below that, Idle under 30 uses. Response times leave out days when they were not recorded.</p>
@@ -412,7 +437,7 @@ footer { margin-top: 18px; display: flex; justify-content: space-between; flex-w
   <section id="missed">
     <div class="sec-head">
       <h2>Searches that found nothing</h2>
-      <p>{{zero_n}} product searches since {{ops_from}} ({{zero}} of all product searches, in {{zero_chat_share}} of chats) returned nothing: buyer intent the assistant could not serve, from catalog gaps, sold-out sizes or search misses.</p>
+      <p>{{zero_n}} product searches {{since_txt}} ({{zero}} of all product searches, in {{zero_chat_share}} of chats) returned nothing: buyer intent the assistant could not serve, from catalog gaps, sold-out sizes or search misses.</p>
     </div>
     <div class="grid-2">
       <div class="card">
@@ -433,7 +458,7 @@ footer { margin-top: 18px; display: flex; justify-content: space-between; flex-w
   <div class="part part2" id="part-feedback">
     <div class="part-tag">Part 2</div>
     <div><h2 class="part-title">Customer feedback: how customers rate the answers</h2>
-    <p class="part-sub">From the Helpful or Not helpful feedback buttons, added later (first ratings on {{fb_from}}) · {{fb_from}} to {{fb_to}} ({{fb_n}} ratings in {{fb_chats}} chats) · {{fb_source}}</p></div>
+    <p class="part-sub">From the Helpful or Not helpful feedback buttons, added later (first ratings on {{fb_first}}) · {{fb_from}} to {{fb_to}} ({{fb_n}} ratings in {{fb_chats}} chats) · {{fb_source}}</p></div>
   </div>
   <section id="customers">
     <div class="sec-head">
@@ -532,7 +557,7 @@ footer { margin-top: 18px; display: flex; justify-content: space-between; flex-w
         <div class="prio-top"><span class="tag tag-p0">P0 · Now</span><span class="prio-rank">2</span></div>
         <h3>Make product search respect sizes and close catalog gaps</h3>
         <ul>
-          <li>{{zero}} of product searches found nothing ({{zero_n}} since {{ops_from}})</li>
+          <li>{{zero}} of product searches found nothing ({{zero_n}} {{since_txt}})</li>
           <li>{{size_only}} of {{nh_total}} Not helpful ratings: size, gender or type ignored, plus {{dup_n}} with the same item listed repeatedly</li>
           <li>Most-missed brands: {{top_brands}}</li>
         </ul>
@@ -560,7 +585,7 @@ footer { margin-top: 18px; display: flex; justify-content: space-between; flex-w
         <div class="prio-top"><span class="tag tag-p1">P1 · Next</span><span class="prio-rank">5</span></div>
         <h3>{{demand_title}}</h3>
         <ul>
-          <li>{{q_l28_day}} questions a day in the last 4 weeks, {{q_change}}</li>
+          <li>{{q_l28_day}} questions a day {{in_recent}}, {{q_change}}</li>
           <li>Weekly peak of {{peak_day}} a day was in {{peak_month}}</li>
         </ul>
         <div class="owner">Owner: E-commerce and marketing</div>
@@ -580,7 +605,7 @@ footer { margin-top: 18px; display: flex; justify-content: space-between; flex-w
         <li><b>Linking the two sheets.</b> Ratings share no trace IDs with Sheet 1, so they cannot be matched to individual answers; Customer rating by area matches them by the topic of the question.</li>
         {{gap_note}}
         <li><b>Searches that found nothing</b> use V10's lost demand rule on product search tools.</li>
-        <li><b>Weeks</b> run {{week_span}} and end on the latest day in the sheet ({{ops_to}}){{partial_note}}. "Last 4 weeks" is {{l28_from}} to {{l28_to}}, compared with the 28 days before.</li>
+        <li><b>Weeks</b> run {{week_span}} and end on the latest day in the sheet ({{ops_to}}){{partial_note}}. {{cmp_note}}</li>
       </ul>
     </div>
     <footer><span>{{footer_src}}</span><span>Board brief V12 · replaces V11</span></footer>
@@ -768,15 +793,24 @@ function makeRecord(r) {
 function addDays(s, k) { return new Date(Date.parse(s + 'T00:00:00Z') + k * 864e5).toISOString().slice(0, 10); }
 function dayDiff(a, b) { return Math.round((Date.parse(b) - Date.parse(a)) / 864e5); }
 
-function computeOps(R) {
-  if (!R.length) throw new Error('No rows with a valid "Timestamp (BKK)" column.');
+// RA: every row. range (optional): { from, to } as YYYY-MM-DD. Totals cover the range; with no range
+// (or the full range) changes compare the last 4 weeks with the 4 weeks before, otherwise the range
+// is compared with the period of the same length just before it.
+function computeOps(RA, range) {
+  if (!RA.length) throw new Error('No rows with a valid "Timestamp (BKK)" column.');
   // When the export labels real direct replies "(direct response)", a blank Tool Used means
   // the log is missing tool details for that row. Older exports leave direct replies blank.
-  var labelled = R.some(function (r) { return r.direct_label; });
-  R.forEach(function (r) { r.tk = labelled ? !r.blank : true; });
+  var labelled = RA.some(function (r) { return r.direct_label; });
+  RA.forEach(function (r) { r.tk = labelled ? !r.blank : true; });
 
-  var first = R[0].date, last = R[0].date;
-  R.forEach(function (r) { if (r.date < first) first = r.date; if (r.date > last) last = r.date; });
+  var dataFirst = RA[0].date, dataLast = RA[0].date;
+  RA.forEach(function (r) { if (r.date < dataFirst) dataFirst = r.date; if (r.date > dataLast) dataLast = r.date; });
+  var first = range && range.from > dataFirst ? range.from : dataFirst;
+  var last = range && range.to < dataLast ? range.to : dataLast;
+  if (first > last) throw new Error('No answers in the selected timeframe.');
+  var filtered = first !== dataFirst || last !== dataLast;
+  var R = filtered ? RA.filter(function (r) { return r.date >= first && r.date <= last; }) : RA;
+  if (!R.length) throw new Error('No answers in the selected timeframe.');
   var total_days = dayDiff(first, last) + 1;
 
   function S(rs, days) {
@@ -800,11 +834,14 @@ function computeOps(R) {
     };
   }
   function between(a, b) { return R.filter(function (r) { return r.date >= a && r.date <= b; }); }
+  function betweenAll(a, b) { return RA.filter(function (r) { return r.date >= a && r.date <= b; }); }
 
   var overall = S(R, total_days);
-  var l28 = [addDays(last, -27), last], p28 = [addDays(last, -55), addDays(last, -28)];
-  var L = between(l28[0], l28[1]), P = between(p28[0], p28[1]);
-  var last28 = S(L, 28), prev28 = P.length ? S(P, 28) : null;
+  var cmpDays = filtered ? total_days : 28;
+  var l28 = filtered ? [first, last] : [addDays(last, -27), last];
+  var p28 = [addDays(l28[0], -cmpDays), addDays(l28[0], -1)];
+  var L = betweenAll(l28[0], l28[1]), P = betweenAll(p28[0], p28[1]);
+  var last28 = S(L, cmpDays), prev28 = P.length ? S(P, cmpDays) : null;
 
   var weeks = [];
   for (var end = last; end >= first; end = addDays(end, -7)) {
@@ -838,8 +875,8 @@ function computeOps(R) {
   K.forEach(function (r) { (byTool[r.tool] = byTool[r.tool] || []).push(r); });
   var tools = Object.keys(byTool).map(function (name) {
     var x = byTool[name];
-    var xl = x.filter(function (r) { return r.date >= l28[0]; });
-    var xp = x.filter(function (r) { return r.date >= p28[0] && r.date <= p28[1]; });
+    var xl = LK.filter(function (r) { return r.tool === name; });
+    var xp = PK.filter(function (r) { return r.tool === name; });
     var ds = x.map(function (r) { return r.date; }).sort();
     var f10 = 0; x.forEach(function (r) { if (r.f10) f10++; });
     return {
@@ -890,8 +927,8 @@ function computeOps(R) {
   var sortObj = function (o) { return Object.keys(o).map(function (k) { return { name: k, value: o[k] }; }).sort(function (a, b) { return b.value - a.value; }); };
 
   return {
-    window: { first: first, last: last, total_days: total_days, l28: l28, p28: p28 }, labelled: labelled,
-    day_counts: (function () { var o = {}; dayKeys.forEach(function (d) { o[d] = perDay[d][0]; }); return o; })(),
+    window: { first: first, last: last, total_days: total_days, l28: l28, p28: p28, cmp_days: cmpDays, filtered: filtered, data_first: dataFirst, data_last: dataLast }, labelled: labelled,
+    day_counts: (function () { var o = {}; RA.forEach(function (r) { o[r.date] = (o[r.date] || 0) + 1; }); return o; })(),
     overall: overall, last28: last28, prev28: prev28, weeks: weeks, caps: caps, tools: tools, gaps: gaps,
     html_incident: { count: h.length, from: h[0] || null, to: h[h.length - 1] || null },
     refund_first_day: refundDays[0] || null,
@@ -1228,8 +1265,8 @@ window.V11Init = function (V11DATA) {
     var endTxt = opt.fmt(vals[li]);
     var top = 18, bottom = H - 26, left = Math.max.apply(null, ticks.map(function (t) { return measure(svg, opt.axis(t)); })) + 10;
     var right = measure(svg, endTxt, 'lbl-strong') + 14;
-    var step = (W - left - right) / (vals.length - 1);
-    var x = function (i) { return left + step * i; };
+    var step = (W - left - right) / Math.max(1, vals.length - 1);
+    var x = function (i) { return vals.length === 1 ? (left + W - right) / 2 : left + step * i; };
     var y = function (v) { return bottom - (v / ticks[ticks.length - 1]) * (bottom - top); };
     ticks.forEach(function (t) {
       node('line', { x1: left, x2: W - right, y1: y(t), y2: y(t), 'class': t === 0 ? 'axis' : 'grid' }, svg);
@@ -1368,7 +1405,7 @@ window.V11Init = function (V11DATA) {
     var svg = node('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, 'aria-hidden': 'true' }, box);
     var known = vals.filter(function (v) { return v != null; });
     var lo = Math.min.apply(null, known), hi = Math.max.apply(null, known), span = hi - lo || 1;
-    var x = function (i) { return pad + (W - 2 * pad) * i / (vals.length - 1); };
+    var x = function (i) { return pad + (W - 2 * pad) * i / Math.max(1, vals.length - 1); };
     var y = function (v) { return H - pad - (v - lo) / span * (H - 2 * pad); };
     var d = '', pen = false;
     vals.forEach(function (v, i) { if (v == null) { pen = false; return; } d += (pen ? 'L' : 'M') + x(i).toFixed(1) + ',' + y(v).toFixed(1); pen = true; });
@@ -1442,7 +1479,7 @@ window.V11Init = function (V11DATA) {
     var svg = node('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': t.name + (metric === 'fail' ? ' failure rate' : ' questions a day') + ' by week' }, box);
     if (!known.length) { label(svg, W / 2, H / 2 + 4, 'no data', { 'class': 'tick', 'text-anchor': 'middle' }); return; }
     var hi = metric === 'fail' ? Math.max(0.05, Math.max.apply(null, known)) : Math.max.apply(null, known);
-    var x = function (i) { return pad + (W - 2 * pad) * i / (vals.length - 1); };
+    var x = function (i) { return pad + (W - 2 * pad) * i / Math.max(1, vals.length - 1); };
     var y = function (v) { return H - pad - (v / (hi || 1)) * (H - 2 * pad); };
     node('line', { x1: pad, x2: W - pad, y1: H - pad, y2: H - pad, 'class': 'grid' }, svg);
     var d = '', pen = false;
@@ -1462,7 +1499,7 @@ window.V11Init = function (V11DATA) {
       tip.show(e, t.name + ' · ' + range(D.weeks[i]), [[metric === 'fail' ? 's2' : 's1', fmtv(v), metric === 'fail' ? 'failed' : 'questions a day']]);
     };
     hit.setAttribute('tabindex', '0');
-    hit.addEventListener('pointermove', function (e) { var b = svg.getBoundingClientRect(); idx = Math.max(0, Math.min(vals.length - 1, Math.round(((e.clientX - b.left) * (W / b.width) - pad) / ((W - 2 * pad) / (vals.length - 1))))); at(idx, e); });
+    hit.addEventListener('pointermove', function (e) { var b = svg.getBoundingClientRect(); idx = Math.max(0, Math.min(vals.length - 1, Math.round(((e.clientX - b.left) * (W / b.width) - pad) / ((W - 2 * pad) / Math.max(1, vals.length - 1))))); at(idx, e); });
     hit.addEventListener('focus', function (e) { at(idx, e); });
     hit.addEventListener('keydown', function (e) { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { idx = Math.max(0, Math.min(vals.length - 1, idx + (e.key === 'ArrowLeft' ? -1 : 1))); at(idx, { target: hit, type: 'focus' }); e.preventDefault(); } });
     var off = function () { hd.setAttribute('visibility', 'hidden'); tip.hide(); };
@@ -1501,8 +1538,14 @@ window.V11Init = function (V11DATA) {
     });
   }
 
-  var timer = null;
-  window.addEventListener('resize', function () { clearTimeout(timer); timer = setTimeout(draw, 150); });
+  // the page is rebuilt when the timeframe changes: keep one resize and print handler, drawing the latest data
+  window.__v11draw = draw;
+  if (!window.__v11wired) {
+    window.__v11wired = true;
+    var timer = null;
+    window.addEventListener('resize', function () { clearTimeout(timer); timer = setTimeout(function () { window.__v11draw(); }, 150); });
+    window.addEventListener('beforeprint', function () { window.__v11draw(); });
+  }
   // time frame switch: applies to the tool-level health section only
   document.querySelectorAll('.tf [data-tf]').forEach(function (b) {
     b.addEventListener('click', function () {
@@ -1511,7 +1554,6 @@ window.V11Init = function (V11DATA) {
     });
   });
   document.querySelectorAll('[data-print]').forEach(function (b) { b.addEventListener('click', function () { window.print(); }); });
-  window.addEventListener('beforeprint', draw);
   draw();
 };
 
@@ -1581,6 +1623,8 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
   };
   var TEACH_OK = 'Answers worked: keep them as good examples.';
   function countDays(ops, a, b) { var n = 0; for (var d in ops.day_counts) if (d >= a && d <= b) n += ops.day_counts[d]; return n; }
+  var TXT = {};
+  function periodBefore(n) { return n % 7 === 0 ? (n === 7 ? 'the week before' : 'the ' + n / 7 + ' weeks before') : 'the ' + n + ' days before'; }
   function computeFeedback(ops, fb, source) {
     fb = fb.slice().sort(function (a, b) { return a.when < b.when ? -1 : 1; });
     var n = fb.length;
@@ -1689,7 +1733,7 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
       if (worst && k === worst.name && toolStatus(t.vol, t.fail) !== 'good') {
         var w = 'Weakest tool overall';
         if (t.outage) w += '; outage ' + range(t.outage.from, t.outage.to);
-        if (t.fail_l28 != null && t.fail_p28 != null && t.fail_l28 - t.fail_p28 >= 0.01) w += (t.outage ? ', then' : ';') + ' failures rising again in the last 4 weeks';
+        if (t.fail_l28 != null && t.fail_p28 != null && t.fail_l28 - t.fail_p28 >= 0.01) w += (t.outage ? ', then' : ';') + ' failures rising again ' + TXT.in_recent;
         add(k, w + '.');
       } else if (k === 'order_status' && h.count) {
         add(k, 'Raw HTML order cards sent to customers ' + range(h.from, h.to) + '.');
@@ -1701,7 +1745,7 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
       } else if (t.first > early) {
         add(k, 'Launched ' + dm(t.first) + '.');
       }
-      if (k === 'order_status' && t.vol_l28 && t.fail_l28 === 0 && t.fail > 0.005) add(k, 'Fixed since: no failures in the last 4 weeks.');
+      if (k === 'order_status' && t.vol_l28 && t.fail_l28 === 0 && t.fail > 0.005) add(k, 'Fixed since: no failures ' + TXT.in_recent + '.');
       if (slow && k === slow.name) add(k, 'Slowest tool' + (t.share < 0.01 ? ' and rarely used.' : '.'));
     });
     return N;
@@ -1716,7 +1760,7 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
       var lp = t.latency_p28, ll = t.latency_l28;
       if (ll != null && lp != null && ll > TARGET && lp <= TARGET) add(k, 'Slowed from ' + s1(lp) + ' to ' + s1(ll) + ', now above the ' + TARGET + '-second target.');
       if (k === 'refund_return') add(k, 'Now ' + p0(t.share_l28) + ' of questions. Ready-made replies are not counted as failures.');
-      if (t.fail_l28 === 0 && t.fail_p28 > 0) add(k, 'No failures in the last 4 weeks.');
+      if (t.fail_l28 === 0 && t.fail_p28 > 0) add(k, 'No failures ' + TXT.in_recent + '.');
     });
     return N;
   }
@@ -1760,9 +1804,9 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
   function delta(cur, prev, upGood, fmt, textPrev) {
     if (cur == null || prev == null || !prev) return '';
     var ch = change(cur, prev);
-    if (Math.abs(ch) < 0.03) return '<span class="delta flat">Last 4 weeks: ' + fmt(cur) + ', flat on the 4 weeks before</span>';
+    if (Math.abs(ch) < 0.03) return '<span class="delta flat">' + TXT.recent + ': ' + fmt(cur) + ', flat on ' + TXT.prev + '</span>';
     var good = (ch > 0) === upGood;
-    return '<span class="delta ' + (good ? 'good' : 'bad') + '">Last 4 weeks: ' + fmt(cur) + ', ' + (ch > 0 ? 'up' : 'down') + ' ' + textPrev + '</span>';
+    return '<span class="delta ' + (good ? 'good' : 'bad') + '">' + TXT.recent + ': ' + fmt(cur) + ', ' + (ch > 0 ? 'up' : 'down') + ' ' + textPrev + '</span>';
   }
 
   function areaRow(name, tools, rating, kind, note) {
@@ -1784,6 +1828,22 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
     var model = (cats.find(function (c) { return c.name === 'Specific model lookups'; }) || { value: 0 }).value;
     var brands = ops.lost_demand.brands;
     var V = {}, H = {};   // V: plain text, H: trusted html
+    var flt = win.filtered;
+    TXT = {
+      recent: flt ? 'Selected period' : 'Last 4 weeks',
+      recent_lc: flt ? 'the selected period' : 'the last 4 weeks',
+      in_recent: flt ? 'in the selected period' : 'in the last 4 weeks',
+      prev: flt ? periodBefore(win.cmp_days) : 'the 4 weeks before'
+    };
+    V.in_recent = TXT.in_recent; V.prev_txt = TXT.prev;
+    V.p28_from = dm(win.p28[0]); V.p28_to = dm(win.p28[1]);
+    V.since_txt = flt ? 'from ' + dm(win.first) + ' to ' + dm(win.last) : 'since ' + dm(win.first);
+    V.glance_when = flt ? 'Totals for ' + range(win.first, win.last) + ' · changes compare with ' + TXT.prev + ' (' + range(win.p28[0], win.p28[1]) + ')' :
+      'Totals since ' + dm(win.first) + ' · changes compare the last 4 weeks (' + dm(win.l28[0]) + ' to ' + dm(win.l28[1]) + ') with the 4 weeks before';
+    V.cmp_note = flt ? 'With a timeframe selected, figures cover ' + range(win.first, win.last) + ' and changes compare it with ' + TXT.prev + ' (' + range(win.p28[0], win.p28[1]) + ').' :
+      '"Last 4 weeks" is ' + dm(win.l28[0]) + ' to ' + dm(win.l28[1]) + ', compared with the 28 days before.';
+    V.tf_switch_hidden = flt ? ' hidden' : ''; V.tf_all_hidden = flt ? ' hidden' : ''; V.tf_l28_hidden = flt ? '' : ' hidden';
+    V.tf_switch_txt = flt ? 'Figures cover the selected timeframe;' : 'This switch changes only this section;';
 
     // header and part 1
     V.ops_from = dm(win.first); V.ops_to = dm(win.last, true); V.ops_days = win.total_days;
@@ -1801,18 +1861,21 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
     H.tiles_zero_delta = delta(L.zero_share, P.zero_share, false, p0, P.zero_share != null ? 'from ' + p0(P.zero_share) : '');
 
     // trend section
-    var lede = 'Demand peaked in ' + V.peak_month + (falling ? ' and has fallen since.' : rising ? ' and is rising again.' : '.');
+    var lede = flt ? 'Questions averaged ' + n0(L.per_day) + ' a day' + (P.per_day ? ', ' + (falling ? 'down ' : rising ? 'up ' : 'flat ') + (falling || rising ? p0(Math.abs(change(L.per_day, P.per_day))) + ' on ' : 'against ') + TXT.prev + '.' : '.') :
+      'Demand peaked in ' + V.peak_month + (falling ? ' and has fallen since.' : rising ? ' and is rising again.' : '.');
     if (latestLat) {
       var up = P.avg_latency && L.avg_latency > P.avg_latency * 1.03;
-      lede += ' Response time ' + (up ? 'is climbing' : 'was') + ' (' + s1(latestLat.avg_latency) + (latestLat === latest ? ' in the latest week' : ' in the latest week with times recorded') + ', against an ' + TARGET + '-second target),';
+      var wk = latestLat === latest ? 'in the latest week' : 'in the latest week with times recorded';
+      lede += up ? ' Response time is climbing (' + s1(latestLat.avg_latency) + ' ' + wk + ', against an ' + TARGET + '-second target),' :
+        ' Response time was ' + s1(latestLat.avg_latency) + ' ' + wk + ' (target ' + TARGET + 's),';
     }
-    lede += ' and technical failures ran at ' + (L.fail_rate != null ? p1(L.fail_rate) : 'n/a') + ' of answers over the last 4 weeks.';
+    lede += ' and technical failures ran at ' + (L.fail_rate != null ? p1(L.fail_rate) : 'n/a') + ' of answers over ' + TXT.recent_lc + '.';
     V.trend_lede = lede;
     V.partial_bar_note = W[0].partial ? 'lighter bar: partial first week (' + range(W[0].start, W[0].end) + ') · ' : '';
     var why;
     if (P.avg_latency && L.avg_latency != null) {
       var slower = L.avg_latency > P.avg_latency;
-      why = (slower ? 'Why slower: over' : 'Over') + ' the last 4 weeks, average response time ' + (slower ? 'rose' : 'moved') + ' from ' + s1(P.avg_latency) + ' to ' + s1(L.avg_latency) + '.';
+      why = (slower ? 'Why slower: over' : 'Over') + ' ' + TXT.recent_lc + ', average response time ' + (slower ? 'rose' : 'moved') + ' from ' + s1(P.avg_latency) + ' to ' + s1(L.avg_latency) + '.';
       var parts = [];
       if (C.faq.latency_l28 != null && C.faq.latency_p28 != null && Math.abs(C.faq.latency_l28 - C.faq.latency_p28) >= 0.3)
         parts.push('FAQ answers ' + (C.faq.latency_l28 > C.faq.latency_p28 ? 'slowed' : 'sped up') + ' from ' + s1(C.faq.latency_p28) + ' to ' + s1(C.faq.latency_l28));
@@ -1918,17 +1981,17 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
 
     // part 3: priorities
     var pf = C.promo.fail_l28, pp = C.promo.fail_p28;
-    V.promo_bullet = pf == null ? 'Promotion tool not used in the last 4 weeks' :
-      p0(pf) + ' of promotion answers failed in the last 4 weeks' + (pp == null ? '' : Math.abs(pf - pp) < 0.005 ? ', about the same as the 4 weeks before (' + p0(pp) + ')' : ', ' + (pf > pp ? 'up' : 'down') + ' from ' + p0(pp));
+    V.promo_bullet = pf == null ? 'Promotion tool not used ' + TXT.in_recent :
+      p0(pf) + ' of promotion answers failed ' + TXT.in_recent + (pp == null ? '' : Math.abs(pf - pp) < 0.005 ? ', about the same as ' + TXT.prev + ' (' + p0(pp) + ')' : ', ' + (pf > pp ? 'up' : 'down') + ' from ' + p0(pp));
     var pt = F.tmap['Promotions & discounts'] || { helpful: 0, ratings: 0 }, ot = F.tmap['Order tracking'] || { helpful: 0, ratings: 0 };
     V.promo_h = pt.helpful; V.promo_n = pt.ratings; V.order_h = ot.helpful; V.order_n = ot.ratings;
     V.promo_nh = F.cc.promo || 0; V.size_only = F.cc.size || 0; V.dup_n = F.cc.duplicates || 0;
     V.top_brands = brands.slice(0, 3).map(function (b) { return b.name; }).join(', ') || 'none recorded';
     var of = C.order.fail_l28;
-    V.order_bullet = of == null ? 'No order lookups in the last 4 weeks' : of === 0 ? 'Order lookup errors are fixed: none in the last 4 weeks' : 'Order lookups failed on ' + p1(of) + ' of answers in the last 4 weeks';
+    V.order_bullet = of == null ? 'No order lookups ' + TXT.in_recent : of === 0 ? 'Order lookup errors are fixed: none ' + TXT.in_recent : 'Order lookups failed on ' + p1(of) + ' of answers ' + TXT.in_recent;
     V.repeat_chats = F.repeat_chats; V.reply_needed = F.q_comments + F.human;
     V.q_l28_day = n0(L.per_day);
-    V.q_change = !P.per_day ? 'no earlier period to compare' : (falling ? 'down ' : rising ? 'up ' : 'flat, ') + (falling || rising ? p0(Math.abs(change(L.per_day, P.per_day))) + ' on the 4 weeks before' : 'against the 4 weeks before');
+    V.q_change = !P.per_day ? 'no earlier period to compare' : (falling ? 'down ' : rising ? 'up ' : 'flat, ') + (falling || rising ? p0(Math.abs(change(L.per_day, P.per_day))) + ' on ' + TXT.prev : 'against ' + TXT.prev);
     V.demand_title = falling ? 'Find out why chat demand is falling' : 'Keep track of chat demand';
 
     // notes
@@ -1955,12 +2018,45 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
     return { V: V, H: H, data: data };
   }
 
-  function render(ops, rt) {
+  // ---------- timeframe filter ----------
+  // Presets count back from the latest day of each sheet; a custom range uses the same dates for both.
+  var PRESETS = [['all', 'All time'], ['l4w', 'Last 4 weeks'], ['l3m', 'Last 3 months'], ['l6m', 'Last 6 months']];
+  var PRESET_DAYS = { l4w: 28, l3m: 91, l6m: 182 };
+  var STATE = { records: null, ratings: null, source: null, key: 'all', from: null, to: null, loadedAt: '' };
+
+  function minMax(list) { var a = null, b = null; list.forEach(function (r) { if (a === null || r.date < a) a = r.date; if (b === null || r.date > b) b = r.date; }); return [a, b]; }
+  function rangeFor(dates) {
+    if (STATE.key === 'all') return null;
+    if (STATE.key === 'custom') return { from: STATE.from, to: STATE.to };
+    return { from: addDays(dates[1], -(PRESET_DAYS[STATE.key] - 1)), to: dates[1] };
+  }
+  function inRange(d, r) { return !r || (d >= r.from && d <= r.to); }
+
+  function render() {
     setStep('Building the dashboard');
-    var F = computeFeedback(ops, rt.list, rt.source);
-    var now = new Date();
-    var loadedAt = now.toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-    var b = buildValues(ops, F, loadedAt);
+    var s1 = minMax(STATE.records), s2 = minMax(STATE.ratings);
+    var notes = [];
+    var r1 = rangeFor(s1), ops;
+    try { ops = computeOps(STATE.records, r1); }
+    catch (e) { ops = computeOps(STATE.records, null); notes.push('No answers in Sheet 1 for this timeframe, so Part 1 shows all time.'); }
+    var r2 = rangeFor(s2), list = STATE.ratings.filter(function (r) { return inRange(r.date, r2); });
+    if (!list.length) { list = STATE.ratings; notes.push('No customer ratings in this timeframe, so Part 2 shows all ratings.'); }
+    var F = computeFeedback(ops, list, STATE.source);
+    var b = buildValues(ops, F, STATE.loadedAt);
+
+    // filter bar values
+    var allMin = s1[0] < s2[0] ? s1[0] : s2[0], allMax = s1[1] > s2[1] ? s1[1] : s2[1];
+    b.H.range_tabs = PRESETS.concat([['custom', 'Custom']]).map(function (p) {
+      return '<button type="button" data-range="' + p[0] + '" aria-pressed="' + (STATE.key === p[0]) + '">' + p[1] + '</button>';
+    }).join('');
+    b.V.fb_first = dm(s2[0]);
+    b.V.range_min = allMin; b.V.range_max = allMax;
+    b.V.range_from = STATE.key === 'custom' ? STATE.from : (r1 ? r1.from : s1[0]);
+    b.V.range_to = STATE.key === 'custom' ? STATE.to : (r1 ? r1.to : s1[1]);
+    var showing = 'Showing: operations ' + range(ops.window.first, ops.window.last) + ' · ratings ' + range(F.from, F.to) + '.';
+    if (STATE.key !== 'all' && STATE.key !== 'custom') showing += ' Presets count back from the latest day in each sheet.';
+    b.V.range_note = showing + (notes.length ? ' ' + notes.join(' ') : '');
+
     var tpl = document.getElementById('page-tpl').innerHTML;
     // placeholders inside tables sit in comments so the parser keeps them in place
     var html = tpl.replace(/(?:<!--)?\{\{(\w+)\}\}(?:-->)?/g, function (m, k) {
@@ -1968,10 +2064,65 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
       if (Object.prototype.hasOwnProperty.call(b.V, k)) return esc(b.V[k]);
       return '';
     });
-    var page = document.getElementById('page');
+    var page = document.getElementById('page'), y = window.scrollY;
     page.innerHTML = html;
     document.getElementById('loading').hidden = true;
     window.V11Init(b.data);
+    window.scrollTo(0, y);
+  }
+  function rerender(focusSel) {
+    try { render(); } catch (e) { fail(e); return; }
+    if (focusSel) { var el = document.querySelector(focusSel); if (el) el.focus(); }
+  }
+  document.addEventListener('click', function (ev) {
+    var t = ev.target.closest && ev.target.closest('[data-range]');
+    if (t) {
+      var k = t.getAttribute('data-range');
+      if (k === 'custom') {
+        var f = document.getElementById('range-from'), to = document.getElementById('range-to');
+        STATE.key = 'custom'; STATE.from = f.value; STATE.to = to.value;
+      } else STATE.key = k;
+      rerender('[data-range="' + k + '"]');
+      return;
+    }
+    if (ev.target.id === 'range-apply') {
+      var a = document.getElementById('range-from').value, z = document.getElementById('range-to').value;
+      if (!a || !z) return;
+      if (a > z) { var tmp = a; a = z; z = tmp; }
+      STATE.key = 'custom'; STATE.from = a; STATE.to = z;
+      rerender('#range-apply');
+    }
+  });
+  function start(records, rt) {
+    STATE.records = records; STATE.ratings = rt.list; STATE.source = rt.source;
+    STATE.loadedAt = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    render();
+  }
+
+  // file version: rows of the uploaded workbook, packed into the page (see make_embed.js)
+  function unpackRecords(E) {
+    var bin = atob(E.b64), bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    if (typeof DecompressionStream === 'undefined') return Promise.reject(new Error('This browser is too old to open the packed data. Please use a current version of Chrome, Edge, Safari or Firefox.'));
+    var stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    return new Response(stream).arrayBuffer().then(function (buf) {
+      var n = E.n, dv = new DataView(buf), o = 0, cols = {};
+      E.layout.forEach(function (c) { cols[c[0]] = { off: o, size: c[1] }; o += c[1] * n; });
+      var get = function (c, i) { var x = cols[c]; return x.size === 1 ? dv.getUint8(x.off + i) : x.size === 2 ? dv.getUint16(x.off + 2 * i, true) : dv.getUint32(x.off + 4 * i, true); };
+      var day0 = Date.parse(E.day0 + 'T00:00:00Z'), dayStr = [], R = new Array(n);
+      for (i = 0; i < n; i++) {
+        var d = get('day', i);
+        if (!dayStr[d]) dayStr[d] = new Date(day0 + d * 864e5).toISOString().slice(0, 10);
+        var tool = E.tools[get('tool', i)], fl = get('flags', i), t = get('time', i) / 10, cat = get('cat', i), brand = get('brand', i);
+        R[i] = {
+          date: dayStr[d], tool: tool, cap: CAP[tool] || 'other', blank: !!(fl & 1), direct_label: !!(fl & 2),
+          f10: !!(fl & 4), f: !!(fl & 8), zero: !!(fl & 16), html: !!(fl & 32), mk: !!(fl & 64), time: t,
+          product: CONFIG.PRODUCT_SEARCH_TOOLS.indexOf(tool) !== -1, sid: get('sid', i),
+          cat: cat ? E.cats[cat - 1] : undefined, brand: brand ? E.brands[brand - 1] : null
+        };
+      }
+      return R;
+    });
   }
 
   // ---------- load Sheet 1 from the published Google Sheet ----------
@@ -1998,9 +2149,7 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
                 setTimeout(function () {
                   try {
                     if (!R.length) throw new Error(seen ? 'No rows have a valid "Timestamp (BKK)" value.' : 'The sheet is empty.');
-                    var ops = computeOps(R);
-                    ops.records = R;
-                    resolve(ops);
+                    resolve(R);
                   } catch (e) { reject(e); }
                 }, 20);
               },
@@ -2031,10 +2180,10 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
   }
 
   if (window.V12_EMBED) {
-    // file version: figures were worked out from the uploaded workbook and stored in this page
-    try { render(window.V12_EMBED.ops, { list: window.V12_EMBED.ratings, source: 'file' }); } catch (e) { fail(e); }
+    setStep('Opening the stored data');
+    unpackRecords(window.V12_EMBED.records).then(function (R) { start(R, { list: window.V12_EMBED.ratings, source: 'file' }); }).catch(fail);
   } else {
-    Promise.all([load(), loadRatings()]).then(function (x) { render(x[0], x[1]); }).catch(fail);
+    Promise.all([load(), loadRatings()]).then(function (x) { start(x[0], x[1]); }).catch(fail);
   }
 })();
 
