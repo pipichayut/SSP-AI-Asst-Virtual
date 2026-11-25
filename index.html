@@ -1813,8 +1813,10 @@ var FILE_NAME = 'Virtual AI Data Input (3).xlsx';
       }
       var st = toolStatus(vol, f || 0); counts[st]++;
       var rt = RT[t.name], rtot = rt ? rt.h + rt.nh : 0;
-      var rh = rt ? '<span class="rate-h">' + rt.h + '</span>' : '<span class="muted">none</span>';
-      var rn = rt ? '<span class="rate-nh' + (rt.nh ? '' : ' zero') + '">' + rt.nh + '</span>' + (rtot ? '<span class="small-flat">' + p0(rt.h / rtot) + ' helpful</span>' : '') : '<span class="muted">none</span>';
+      // share of this tool's ratings: helpful under Helpful, not helpful under Not helpful (the two add up to 100%)
+      var hp = rtot ? Math.round(100 * rt.h / rtot) : 0;
+      var rh = rt ? '<span class="rate-h">' + rt.h + '</span><span class="small-flat">' + hp + '% helpful</span>' : '<span class="muted">none</span>';
+      var rn = rt ? '<span class="rate-nh' + (rt.nh ? '' : ' zero') + '">' + rt.nh + '</span><span class="small-flat">' + (100 - hp) + '% not helpful</span>' : '<span class="muted">none</span>';
       var note = notes[t.name] || '';
       if (rtot >= 5 && rt.h / rtot < 0.45) note = (note ? note + ' ' : '') + 'Customers rated only ' + rt.h + ' of ' + rtot + ' answers helpful.';
       var lc = lat == null ? '<span class="cv">no use</span>' : '<span class="cv">' + s1(lat) + (lat > TARGET ? '<span class="small-up">above ' + TARGET + 's target</span>' : '') + '</span>';
